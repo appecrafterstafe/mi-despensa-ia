@@ -4,110 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Almacén Familiar</title>
-    <script src="https://tailwindcss.com"></script>
     <style>
-        body { overscroll-behavior-y: contain; -webkit-tap-highlight-color: transparent; }
-        .scrollbar-none::-webkit-scrollbar { display: none; }
-        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        /* CONFIGURACIÓN BASE ESTILO ANDROID NATIVO */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; min-height: 100vh; flex-direction: column; display: flex; padding-bottom: 90px; overscroll-behavior-y: contain; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        /* BARRA SUPERIOR (TOP BAR) */
+        header { background: linear-gradient(135deg, #0f172a, #1e1b4b); padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 2px solid rgba(99, 102, 241, 0.2); color: white; }
+        header h1 { font-size: 22px; font-weight: 900; tracking: -0.05em; }
+        header p { font-size: 11px; color: #a5b4fc; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+        .badge-online { font-size: 11px; background: rgba(52, 211, 153, 0.2); color: #34d399; font-weight: 700; padding: 6px 12px; border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 20px; display: flex; align-items: center; gap: 6px; }
+        .badge-dot { width: 8px; height: 8px; background-color: #34d399; border-radius: 50%; display: inline-block; }
+
+        /* CONTENEDOR MÓVIL PRINCIPAL */
+        main { flex: 1; width: 100%; max-width: 500px; margin: 0 auto; padding: 16px; }
+        .hidden { display: none !important; }
+
+        /* PANTALLAS Y PASTILLAS (CHIPS) */
+        .chips-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; }
+        .chip { padding: 12px 22px; border-radius: 16px; font-size: 13px; font-weight: 800; border: 1px solid #e2e8f0; background-color: white; color: #475569; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .chip.active-heladera { background-color: #2563eb; color: white; border-color: #3b82f6; transform: scale(1.02); box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2); }
+        .chip.active-alacena { background-color: #d97706; color: white; border-color: #f59e0b; transform: scale(1.02); box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2); }
+        .chip.active-despensa { background-color: #059669; color: white; border-color: #10b981; transform: scale(1.02); box-shadow: 0 4px 8px rgba(5, 150, 105, 0.2); }
+
+        /* TARJETAS DE ALIMENTOS */
+        .items-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        .product-card { background-color: white; padding: 16px; border-radius: 22px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); border-bottom: 3px solid #e2e8f0; }
+        .product-name { font-size: 15px; font-weight: 700; color: #0f172a; }
+        
+        /* BOTONES DEL STOCK */
+        .controls-wrapper { display: flex; align-items: center; gap: 14px; }
+        .btn-counter { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #cbd5e1; background-color: #f8fafc; color: #1e293b; font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.1s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn-counter:active { transform: scale(0.85); background-color: #e2e8f0; }
+        
+        .count-badge { font-size: 14px; font-weight: 900; padding: 6px 16px; border-radius: 20px; min-width: 48px; text-align: center; border: 1px solid transparent; shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .count-heladera { background-color: #eff6ff; color: #1d4ed8; border-color: #dbeafe; }
+        .count-alacena { background-color: #fffbeb; color: #b45309; border-color: #fef3c7; }
+        .count-despensa { background-color: #ecfdf5; color: #047857; border-color: #d1fae5; }
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; font-size: 14px; font-weight: 700; background: white; border-radius: 24px; border: 2px dashed #cbd5e1; }
+
+        /* PANTALLA CHEF IA */
+        .chef-card { background: linear-gradient(135deg, #1e1b4b, #0f172a); border-radius: 24px; padding: 24px; color: white; border: 1px solid #312e81; box-shadow: 0 10px 20px rgba(0,0,0,0.15); margin-bottom: 20px; }
+        .chef-card h2 { font-size: 20px; font-weight: 800; color: #c7d2fe; }
+        .chef-card p { font-size: 12px; color: #cbd5e1; margin-top: 8px; line-height: 1.6; }
+        .btn-ia { width: 100%; margin-top: 18px; background: linear-gradient(90deg, #f97316, #f59e0b); border: none; padding: 16px; border-radius: 16px; color: white; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); }
+        .btn-ia:active { transform: scale(0.97); }
+        
+        .output-box { background-color: white; border-radius: 24px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .output-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .output-content { font-size: 13px; color: #475569; line-height: 1.7; white-space: pre-line; font-weight: 500; }
+
+        /* BOTÓN FLOTANTE ANDROID (FAB) */
+        .fab-android { position: fixed; bottom: 100px; right: 20px; width: 62px; height: 62px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; border: none; border-radius: 20px; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4); display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; transition: all 0.2s ease; z-index: 50; }
+        .fab-android:active { transform: scale(0.9); }
+
+        /* MENÚ DE NAVEGACIÓN INFERIOR (BOTTOM NAV) */
+        nav { position: fixed; bottom: 0; left: 0; right: 0; height: 76px; background-color: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05); padding: 0 16px; z-index: 40; }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 56px; border-radius: 18px; border: none; background: transparent; color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; tracking: 0.05em; cursor: pointer; transition: all 0.2s ease; }
+        .nav-btn .icon { font-size: 24px; margin-bottom: 3px; }
+        .nav-btn.active { color: #4f46e5; background-color: #e0e7ff; }
+
+        /* FORMULARIO EMERGENTE (BOTTOM SHEET) */
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.55); backdrop-filter: blur(5px); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
+        .modal-sheet { background-color: white; width: 100%; max-width: 500px; border-radius: 28px 28px 0 0; padding: 24px 24px 34px 24px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-b: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 18px; }
+        .modal-header h3 { font-size: 19px; font-weight: 900; color: #0f172a; }
+        .btn-close { width: 34px; height: 34px; border-radius: 50%; background-color: #f1f5f9; border: none; font-weight: 800; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { font-size: 11px; font-weight: 900; color: #94a3b8; text-transform: uppercase; tracking: 0.05em; display: block; margin-bottom: 6px; }
+        .form-control { width: 100%; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; }
+        .form-control:focus { border-color: #4f46e5; background-color: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .btn-submit { width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none; padding: 16px; border-radius: 14px; color: white; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+        
+        .pulse-text { color: #f97316; font-weight: 700; animation: pulse 1.5s infinite; font-size: 13px; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col pb-24 select-none">
+<body>
 
-    <!-- BARRA SUPERIOR PREMIUM (TOP APP BAR) -->
-    <header class="sticky top-0 z-40 bg-gradient-to-r from-slate-900 to-indigo-950 px-5 py-5 flex justify-between items-center shadow-md border-b border-indigo-900/40">
+    <!-- BARRA SUPERIOR -->
+    <header>
         <div>
-            <h1 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">🏡 Almacén</h1>
-            <p id="subtitulo-seccion" class="text-xs font-semibold text-indigo-300 mt-0.5 uppercase tracking-wider">Stock • Heladera</p>
+            <h1>🏡 Almacén</h1>
+            <p id="subtitulo-seccion">Stock • Heladera</p>
         </div>
-        <div class="text-xs bg-emerald-500/20 text-emerald-400 font-bold px-3 py-1.5 rounded-full border border-emerald-500/30 backdrop-blur-md shadow-xs flex items-center gap-1.5 animate-pulse">
-            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Online
+        <div class="badge-online">
+            <span class="badge-dot"></span>Online
         </div>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL ANDROID -->
-    <main class="flex-1 overflow-y-auto p-4 max-w-xl mx-auto w-full space-y-4">
-        
-        <!-- PANTALLA 1: EL INVENTARIO -->
-        <div id="vista-inventario" class="space-y-4">
-            <!-- Selector de categorías estilo pastillas Android (Chips) -->
-            <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                <button onclick="cambiarFiltroUbicacion('heladera')" id="chip-heladera" class="px-5 py-2.5 rounded-2xl text-xs font-black shadow-xs transition-all border border-blue-200 bg-blue-600 text-white cursor-pointer flex items-center gap-2">
-                    ❄️ Heladera
-                </button>
-                <button onclick="cambiarFiltroUbicacion('alacena')" id="chip-alacena" class="px-5 py-2.5 rounded-2xl text-xs font-black shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-2">
-                    🥖 Alacena
-                </button>
-                <button onclick="cambiarFiltroUbicacion('despensa')" id="chip-despensa" class="px-5 py-2.5 rounded-2xl text-xs font-black shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-2">
-                    📦 Despensa
-                </button>
+    <!-- CONTENEDOR MÓVIL -->
+    <main>
+        <!-- PANTALLA 1: INVENTARIO -->
+        <div id="vista-inventario">
+            <div class="chips-container">
+                <button onclick="cambiarFiltroUbicacion('heladera')" id="chip-heladera" class="chip active-heladera">❄️ Heladera</button>
+                <button onclick="cambiarFiltroUbicacion('alacena')" id="chip-alacena" class="chip">🥖 Alacena</button>
+                <button onclick="cambiarFiltroUbicacion('despensa')" id="chip-despensa" class="chip">📦 Despensa</button>
             </div>
-            
-            <!-- Lista de productos premium -->
-            <ul id="lista-productos-movil" class="space-y-3"></ul>
+            <ul id="lista-productos-movil" class="items-list"></ul>
         </div>
-
-        <!-- PANTALLA 2: EL CHEF IA -->
-        <div id="vista-chef" class="hidden space-y-4">
-            <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 text-white p-6 rounded-3xl shadow-xl border border-indigo-900/60 relative overflow-hidden">
-                <div class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl"></div>
-                <h2 class="text-xl font-extrabold flex items-center gap-2 text-indigo-300">🤖 Chef Inteligente IA</h2>
-                <p class="text-slate-300 text-xs mt-1.5 leading-relaxed font-medium">El backend seguro de Vercel analizará tu stock en tiempo real para armarte recetas de inmediato.</p>
-                <button id="btn-ia" onclick="generarRecetasConIA()" class="mt-5 w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black py-4 px-4 rounded-2xl shadow-lg transition-all transform active:scale-95 text-center text-sm cursor-pointer border-none uppercase tracking-wider">
-                    ✨ Sugerir Menú de Cocina
-                </button>
+        <!-- PANTALLA 2: CHEF IA -->
+        <div id="vista-chef" class="hidden">
+            <div class="chef-card">
+                <h2>🤖 Chef Inteligente IA</h2>
+                <p>El backend seguro de Vercel analizará tu stock en tiempo real para armarte recetas de inmediato.</p>
+                <button id="btn-ia" onclick="generarRecetasConIA()" class="btn-ia">✨ Sugerir Menú de Cocina</button>
             </div>
-            <div id="contenedor-recetas" class="bg-white p-6 rounded-3xl shadow-md border border-slate-200/80 hidden animate-fadeIn">
-                <h3 class="font-extrabold text-sm text-slate-900 mb-3 border-b border-slate-100 pb-2.5 flex items-center gap-2">🍽️ Sugerencias Exclusivas:</h3>
-                <div id="resultado-texto" class="text-slate-600 text-xs whitespace-pre-line space-y-3 leading-relaxed font-medium"></div>
+            <div id="contenedor-recetas" class="output-box hidden">
+                <h3 class="output-title">🍽️ Sugerencias Exclusivas:</h3>
+                <div id="resultado-texto" class="output-content"></div>
             </div>
         </div>
-
     </main>
 
-    <!-- BOTÓN FLOTANTE ESTILO MATERIAL DESIGN 3 (FAB) -->
-    <button onclick="abrirModalAgregar()" id="fab-android" class="fixed bottom-24 right-5 z-50 w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-2xl shadow-2xl flex items-center justify-center transition-all transform active:scale-90 cursor-pointer border-none">
-        <svg xmlns="http://w3.org" class="h-7 w-7 font-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-    </button>
+    <!-- BOTÓN FLOTANTE ANDROID (FAB) -->
+    <button onclick="abrirModalAgregar()" id="fab-android" class="fab-android">+</button>
 
-    <!-- BARRA DE NAVEGACIÓN INFERIOR ESTILO ANDROID PILL -->
-    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 h-20 flex items-center justify-around shadow-2xl px-4 pb-safe">
-        <button onclick="navegarA('inventario')" id="nav-inventario" class="flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-indigo-600 font-black transition-all bg-indigo-50/80 cursor-pointer">
-            <span class="text-2xl mb-0.5">📦</span>
-            <span class="text-[10px] tracking-wider uppercase font-extrabold">Mi Stock</span>
+    <!-- MENÚ DE NAVEGACIÓN INFERIOR (BOTTOM NAV) -->
+    <nav>
+        <button onclick="navegarA('inventario')" id="nav-inventario" class="nav-btn active">
+            <span class="icon">📦</span>
+            <span>Mi Stock</span>
         </button>
-        <button onclick="navegarA('chef')" id="nav-chef" class="flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-slate-400 font-bold transition-all hover:bg-slate-50 cursor-pointer">
-            <span class="text-2xl mb-0.5">🍳</span>
-            <span class="text-[10px] tracking-wider uppercase font-extrabold">Chef IA</span>
+        <button onclick="navegarA('chef')" id="nav-chef" class="nav-btn">
+            <span class="icon">🍳</span>
+            <span>Chef IA</span>
         </button>
     </nav>
 
-    <!-- BOTTOM SHEET DIALOG (MODAL ANDROID) -->
-    <div id="modal-agregar" class="fixed inset-0 z-50 bg-black/60 hidden flex items-end justify-center transition-all p-0 backdrop-blur-xs">
-        <div class="bg-white w-full max-w-xl rounded-t-3xl p-6 space-y-5 shadow-2xl border border-slate-200 animate-slideUp">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="font-black text-slate-900 text-lg">Añadir al Almacén</h3>
-                <button onclick="cerrarModalAgregar()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 text-sm font-black flex items-center justify-center cursor-pointer">✕</button>
+    <!-- FORMULARIO EMERGENTE (BOTTOM SHEET) -->
+    <div id="modal-agregar" class="modal-overlay hidden">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <h3>Añadir al Almacén</h3>
+                <button onclick="cerrarModalAgregar()" class="btn-close">✕</button>
             </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Nombre del Alimento</label>
-                    <input id="nuevo-nombre" type="text" placeholder="Ej. Leche entera, Huevos..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
-                </div>
-                <div>
-                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Ubicación de Guardado</label>
-                    <select id="nueva-ubicacion" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
-                        <option value="heladera">❄️ Heladera</option>
-                        <option value="alacena">🥖 Alacena</option>
-                        <option value="despensa">📦 Despensa</option>
-                    </select>
-                </div>
-                <button onclick="agregarAlimento()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black py-4 px-4 rounded-xl text-sm transition-all transform active:scale-95 shadow-lg cursor-pointer border-none uppercase tracking-wider mt-3">
-                    Confirmar Guardado
-                </button>
+            <div class="form-group">
+                <label>Nombre del Alimento</label>
+                <input id="nuevo-nombre" type="text" placeholder="Ej. Leche entera, Huevos..." class="form-control">
             </div>
+            <div class="form-group">
+                <label>Ubicación de Guardado</label>
+                <select id="nueva-ubicacion" class="form-control">
+                    <option value="heladera">❄️ Heladera</option>
+                    <option value="alacena">🥖 Alacena</option>
+                    <option value="despensa">📦 Despensa</option>
+                </select>
+            </div>
+            <button onclick="agregarAlimento()" class="btn-submit">Confirmar Guardado</button>
         </div>
     </div>
-    <!-- LÓGICA CON PERSISTENCIA Y RENDERIZADO PREMIUM -->
+
+    <!-- LOGICA DE CONTROL ANDROID INTERACTIVO -->
     <script>
         let filtroActual = "heladera"; 
         let vistaActual = "inventario"; 
@@ -122,7 +173,7 @@
             { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa" }
         ];
 
-        function cargarInventarioDeMemoria() {
+        function cargarInventoryDeMemoria() {
             const datosGuardados = localStorage.getItem("almacen_familiar_stock");
             if (datosGuardados) {
                 inventario = JSON.parse(datosGuardados);
@@ -145,29 +196,27 @@
                 document.getElementById('vista-inventario').classList.remove('hidden');
                 document.getElementById('vista-chef').classList.add('hidden');
                 document.getElementById('fab-android').classList.remove('hidden');
-                btnInv.className = "flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-indigo-600 font-black transition-all bg-indigo-50/80 cursor-pointer";
-                btnChef.className = "flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-slate-400 font-bold transition-all hover:bg-slate-50 cursor-pointer";
+                btnInv.className = "nav-btn active";
+                btnChef.className = "nav-btn";
                 document.getElementById('subtitulo-seccion').innerText = `Stock • ${filtroActual.charAt(0).toUpperCase() + filtroActual.slice(1)}`;
             } else {
                 document.getElementById('vista-inventario').classList.add('hidden');
                 document.getElementById('vista-chef').classList.remove('hidden');
                 document.getElementById('fab-android').classList.add('hidden');
-                btnInv.className = "flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-slate-400 font-bold transition-all hover:bg-slate-50 cursor-pointer";
-                btnChef.className = "flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-indigo-600 font-black transition-all bg-indigo-50/80 cursor-pointer";
+                btnInv.className = "nav-btn";
+                btnChef.className = "nav-btn active";
                 document.getElementById('subtitulo-seccion').innerText = "Chef IA • Generador";
             }
         }
 
         function cambiarFiltroUbicacion(ubicacion) {
             filtroActual = ubicacion;
-            const colores = { heladera: 'bg-blue-600 text-white border-blue-200', alacena: 'bg-amber-500 text-white border-amber-200', despensa: 'bg-emerald-600 text-white border-emerald-200' };
-            
             ['heladera', 'alacena', 'despensa'].forEach(u => {
                 const btn = document.getElementById(`chip-${u}`);
                 if(u === ubicacion) {
-                    btn.className = `px-5 py-2.5 rounded-2xl text-xs font-black shadow-md transition-all border ${colores[u]} cursor-pointer flex items-center gap-2 scale-105`;
+                    btn.className = `chip active-${u}`;
                 } else {
-                    btn.className = "px-5 py-2.5 rounded-2xl text-xs font-black shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-2";
+                    btn.className = "chip";
                 }
             });
             document.getElementById('subtitulo-seccion').innerText = `Stock • ${ubicacion.charAt(0).toUpperCase() + ubicacion.slice(1)}`;
@@ -180,21 +229,19 @@
             const filtrados = inventario.map((item, index) => ({...item, originalIndex: index})).filter(item => item.ubicacion === filtroActual);
 
             if(filtrados.length === 0) {
-                listaUl.innerHTML = `<div class="text-center py-12 text-slate-400 font-bold text-sm bg-white rounded-3xl border border-slate-200/60 shadow-xs">No tienes alimentos registrados aquí.</div>`;
+                listaUl.innerHTML = `<div class="empty-state">No tienes alimentos registrados aquí.</div>`;
                 return;
             }
 
-            const badgeColores = { heladera: 'bg-blue-50 text-blue-700 border-blue-100', alacena: 'bg-amber-50 text-amber-700 border-amber-100', despensa: 'bg-emerald-50 text-emerald-700 border-emerald-100' };
-
             filtrados.forEach((item) => {
                 const li = document.createElement('li');
-                li.className = "bg-white p-4 rounded-3xl border border-slate-100 flex justify-between items-center shadow-xs transition-all active:bg-slate-50/80 border-b-2 border-b-slate-200/40";
+                li.className = "product-card";
                 li.innerHTML = `
-                    <span class="font-bold text-slate-900 text-sm tracking-tight">${item.nombre}</span>
-                    <div class="flex items-center gap-3.5">
-                        <button onclick="cambiarCantidad(${item.originalIndex}, -1)" class="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-black flex items-center justify-center border border-slate-200 shadow-xs transition-all active:scale-95 text-base">-</button>
-                        <span class="font-black text-base text-slate-900 px-3 py-1 rounded-full border ${badgeColores[filtroActual]} min-w-[40px] text-center shadow-2xs">${item.cantidad}</span>
-                        <button onclick="cambiarCantidad(${item.originalIndex}, 1)" class="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-black flex items-center justify-center border border-slate-200 shadow-xs transition-all active:scale-95 text-base">+</button>
+                    <span class="product-name">${item.nombre}</span>
+                    <div class="controls-wrapper">
+                        <button onclick="cambiarCantidad(${item.originalIndex}, -1)" class="btn-counter">-</button>
+                        <span class="count-badge count-${filtroActual}">${item.cantidad}</span>
+                        <button onclick="cambiarCantidad(${item.originalIndex}, 1)" class="btn-counter">+</button>
                     </div>
                 `;
                 listaUl.appendChild(li);
@@ -211,18 +258,45 @@
         function abrirModalAgregar() { document.getElementById('modal-agregar').classList.remove('hidden'); }
         function cerrarModalAgregar() { document.getElementById('modal-agregar').classList.add('hidden'); }
 
-        function agregarAlimento() {
-            const nombreInput = document.getElementById('nuevo-nombre');
-            const ubicacionSelect = document.getElementById('nueva-ubicacion');
-            if (!nombreInput.value.trim()) return;
-            
-            inventario.push({ nombre: nombreInput.value.trim(), cantidad: 1, ubicacion: ubicacionSelect.value });
-            guardarInventarioEnMemoria();
-            cambiarFiltroUbicacion(ubicacionSelect.value);
-            
-            nombreInput.value = '';
-            cerrarModalAgregar();
-        }
+  function agregarAlimento() {
+    const nombreInput = document.getElementById('nuevo-nombre');
+    const ubicacionSelect = document.getElementById('nueva-ubicacion');
+    
+    const nombreLimpio = nombreInput.value.trim();
+    if (!nombreLimpio) return;
+    
+    // Convertimos a minúsculas para comparar de forma inteligente
+    const nombreBusqueda = nombreLimpio.toLowerCase();
+    
+    // 🔍 Buscamos si el alimento ya existe en esa misma ubicación
+    const productoExistente = inventario.find(item => 
+        item.nombre.toLowerCase() === nombreBusqueda && 
+        item.ubicacion === ubicacionSelect.value
+    );
+    
+    if (productoExistente) {
+        // Si ya existía en esa zona, le sumamos 1 a la cantidad existente
+        productoExistente.cantidad += 1;
+    } else {
+        // Si es un alimento completamente nuevo, lo agregamos con cantidad 1
+        inventario.push({ 
+            nombre: nombreLimpio, 
+            cantidad: 1, 
+            ubicacion: ubicacionSelect.value 
+        });
+    }
+    
+    // Guardamos los cambios permanentemente en la memoria del celular
+    guardarInventarioEnMemoria();
+    
+    // Cambiamos automáticamente a la pestaña correspondiente para ver el cambio
+    cambiarFiltroUbicacion(ubicacionSelect.value);
+    
+    // Limpiamos el cuadro de texto y cerramos la ventana emergente
+    nombreInput.value = '';
+    cerrarModalAgregar();
+}
+
 
         async function generarRecetasConIA() {
             const btn = document.getElementById('btn-ia');
@@ -232,13 +306,13 @@
             btn.innerText = "🤖 Cocinando ideas...";
             btn.disabled = true;
             contenedor.classList.remove('hidden');
-            resultadoTexto.innerHTML = `<div class="flex items-center gap-2 text-indigo-600 font-bold text-xs animate-pulse"><svg class="animate-spin h-4 w-4" xmlns="http://w3.org" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Creando menú con tus ingredientes...</div>`;
+            resultadoTexto.innerHTML = `<span class="pulse-text">Creando menú con tus ingredientes...</span>`;
 
             const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
             const listaTexto = disponibles.join(", ");
 
             try {
-                const response = await fetch('/api/receta', {
+                const response = await fetch('https://mi-despensa-ia-80qqkwhud-appe-crafter.vercel.app/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ingredientes: listaTexto })
@@ -246,21 +320,22 @@
                 const data = await response.json();
                 if (data.receta) {
                     let texto = data.receta;
-                    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 font-extrabold">$1</strong>');
+                    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                     resultadoTexto.innerHTML = texto;
                 } else {
                     resultadoTexto.innerHTML = `❌ Error en el servidor backend: ${data.error || 'Intenta de nuevo.'}`;
                 }
             } catch (error) {
-                resultadoTexto.innerHTML = "❌ Error de comunicación con Vercel.";
+                resultadoTexto.innerHTML = "❌ Error de comunicación con el backend.";
             } finally {
                 btn.innerText = "✨ Sugerir Menú de Cocina";
                 btn.disabled = false;
             }
         }
 
-        cargarInventarioDeMemoria();
+        cargarInventoryDeMemoria();
         renderizarInventario();
     </script>
 </body>
 </html>
+
