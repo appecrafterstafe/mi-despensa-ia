@@ -7,107 +7,112 @@
     <script src="https://tailwindcss.com"></script>
     <style>
         body { overscroll-behavior-y: contain; -webkit-tap-highlight-color: transparent; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col pb-20 select-none">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col pb-24 select-none">
 
-    <!-- BARRA SUPERIOR (TOP APP BAR) -->
-    <header class="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-4 flex justify-between items-center shadow-xs">
+    <!-- BARRA SUPERIOR PREMIUM (TOP APP BAR) -->
+    <header class="sticky top-0 z-40 bg-gradient-to-r from-slate-900 to-indigo-950 px-5 py-5 flex justify-between items-center shadow-md border-b border-indigo-900/40">
         <div>
-            <h1 class="text-xl font-bold text-slate-950 tracking-tight">🏡 Almacén Familiar</h1>
-            <p id="subtitulo-seccion" class="text-xs font-medium text-indigo-600">Mi Stock • Heladera</p>
+            <h1 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">🏡 Almacén</h1>
+            <p id="subtitulo-seccion" class="text-xs font-semibold text-indigo-300 mt-0.5 uppercase tracking-wider">Stock • Heladera</p>
         </div>
-        <div class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1 rounded-full border border-emerald-200 shadow-xs">
-            🟢 Conectado
+        <div class="text-xs bg-emerald-500/20 text-emerald-400 font-bold px-3 py-1.5 rounded-full border border-emerald-500/30 backdrop-blur-md shadow-xs flex items-center gap-1.5 animate-pulse">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Online
         </div>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <main class="flex-1 overflow-y-auto p-4 max-w-xl mx-auto w-full">
+    <!-- CONTENEDOR PRINCIPAL ANDROID -->
+    <main class="flex-1 overflow-y-auto p-4 max-w-xl mx-auto w-full space-y-4">
         
         <!-- PANTALLA 1: EL INVENTARIO -->
         <div id="vista-inventario" class="space-y-4">
+            <!-- Selector de categorías estilo pastillas Android (Chips) -->
             <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                <button onclick="cambiarFiltroUbicacion('heladera')" id="chip-heladera" class="px-4 py-2 rounded-full text-xs font-bold shadow-xs transition-all border border-indigo-200 bg-indigo-600 text-white cursor-pointer flex items-center gap-1.5">
+                <button onclick="cambiarFiltroUbicacion('heladera')" id="chip-heladera" class="px-5 py-2.5 rounded-2xl text-xs font-black shadow-xs transition-all border border-blue-200 bg-blue-600 text-white cursor-pointer flex items-center gap-2">
                     ❄️ Heladera
                 </button>
-                <button onclick="cambiarFiltroUbicacion('alacena')" id="chip-alacena" class="px-4 py-2 rounded-full text-xs font-bold shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-1.5">
+                <button onclick="cambiarFiltroUbicacion('alacena')" id="chip-alacena" class="px-5 py-2.5 rounded-2xl text-xs font-black shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-2">
                     🥖 Alacena
                 </button>
-                <button onclick="cambiarFiltroUbicacion('despensa')" id="chip-despensa" class="px-4 py-2 rounded-full text-xs font-bold shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-1.5">
+                <button onclick="cambiarFiltroUbicacion('despensa')" id="chip-despensa" class="px-5 py-2.5 rounded-2xl text-xs font-black shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-2">
                     📦 Despensa
                 </button>
             </div>
-            <ul id="lista-productos-movil" class="space-y-2.5"></ul>
+            
+            <!-- Lista de productos premium -->
+            <ul id="lista-productos-movil" class="space-y-3"></ul>
         </div>
 
         <!-- PANTALLA 2: EL CHEF IA -->
         <div id="vista-chef" class="hidden space-y-4">
-            <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
-                <h2 class="text-lg font-bold flex items-center gap-2 text-indigo-300">🤖 Chef Inteligente</h2>
-                <p class="text-slate-300 text-xs mt-1 leading-relaxed">El backend seguro de Vercel leerá tu stock guardado para sugerirte platos instantáneos.</p>
-                <button id="btn-ia" onclick="generarRecetasConIA()" class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition transform active:scale-95 text-center text-sm cursor-pointer block border-none">
-                    ✨ Sugerir Recetas con lo que Hay
+            <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 text-white p-6 rounded-3xl shadow-xl border border-indigo-900/60 relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl"></div>
+                <h2 class="text-xl font-extrabold flex items-center gap-2 text-indigo-300">🤖 Chef Inteligente IA</h2>
+                <p class="text-slate-300 text-xs mt-1.5 leading-relaxed font-medium">El backend seguro de Vercel analizará tu stock en tiempo real para armarte recetas de inmediato.</p>
+                <button id="btn-ia" onclick="generarRecetasConIA()" class="mt-5 w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black py-4 px-4 rounded-2xl shadow-lg transition-all transform active:scale-95 text-center text-sm cursor-pointer border-none uppercase tracking-wider">
+                    ✨ Sugerir Menú de Cocina
                 </button>
             </div>
-            <div id="contenedor-recetas" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hidden">
-                <h3 class="font-bold text-sm text-slate-800 mb-3 border-b border-slate-100 pb-2 flex items-center gap-1.5">🍽️ Menú Recomendado:</h3>
-                <div id="resultado-texto" class="text-slate-600 text-sm whitespace-pre-line space-y-2 leading-relaxed"></div>
+            <div id="contenedor-recetas" class="bg-white p-6 rounded-3xl shadow-md border border-slate-200/80 hidden animate-fadeIn">
+                <h3 class="font-extrabold text-sm text-slate-900 mb-3 border-b border-slate-100 pb-2.5 flex items-center gap-2">🍽️ Sugerencias Exclusivas:</h3>
+                <div id="resultado-texto" class="text-slate-600 text-xs whitespace-pre-line space-y-3 leading-relaxed font-medium"></div>
             </div>
         </div>
 
     </main>
 
-    <!-- BOTÓN FLOTANTE ANDROID (FAB) -->
-    <button onclick="abrirModalAgregar()" id="fab-android" class="fixed bottom-24 right-5 z-50 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl shadow-lg flex items-center justify-center transition-all transform active:scale-90 cursor-pointer border-none">
-        <span class="text-3xl font-light">+</span>
+    <!-- BOTÓN FLOTANTE ESTILO MATERIAL DESIGN 3 (FAB) -->
+    <button onclick="abrirModalAgregar()" id="fab-android" class="fixed bottom-24 right-5 z-50 w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-2xl shadow-2xl flex items-center justify-center transition-all transform active:scale-90 cursor-pointer border-none">
+        <svg xmlns="http://w3.org" class="h-7 w-7 font-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
     </button>
 
-    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
-    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 h-16 flex items-center justify-around shadow-lg px-2 pb-safe">
-        <button onclick="navegarA('inventario')" id="nav-inventario" class="flex flex-col items-center justify-center w-full h-full text-indigo-600 font-bold transition cursor-pointer">
-            <span class="text-xl">📦</span>
-            <span class="text-[10px] mt-0.5 tracking-wide">Mi Stock</span>
+    <!-- BARRA DE NAVEGACIÓN INFERIOR ESTILO ANDROID PILL -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 h-20 flex items-center justify-around shadow-2xl px-4 pb-safe">
+        <button onclick="navegarA('inventario')" id="nav-inventario" class="flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-indigo-600 font-black transition-all bg-indigo-50/80 cursor-pointer">
+            <span class="text-2xl mb-0.5">📦</span>
+            <span class="text-[10px] tracking-wider uppercase font-extrabold">Mi Stock</span>
         </button>
-        <button onclick="navegarA('chef')" id="nav-chef" class="flex flex-col items-center justify-center w-full h-full text-slate-400 font-medium transition cursor-pointer">
-            <span class="text-xl">🍳</span>
-            <span class="text-[10px] mt-0.5 tracking-wide">Chef IA</span>
+        <button onclick="navegarA('chef')" id="nav-chef" class="flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-slate-400 font-bold transition-all hover:bg-slate-50 cursor-pointer">
+            <span class="text-2xl mb-0.5">🍳</span>
+            <span class="text-[10px] tracking-wider uppercase font-extrabold">Chef IA</span>
         </button>
     </nav>
 
-    <!-- VENTANA EMERGENTE MÓVIL (BOTTOM SHEET) -->
-    <div id="modal-agregar" class="fixed inset-0 z-50 bg-black/50 hidden flex items-end justify-center transition-all p-0">
-        <div class="bg-white w-full max-w-xl rounded-t-3xl p-5 space-y-4 shadow-2xl transform translate-y-0 transition-transform border border-slate-200">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                <h3 class="font-bold text-slate-900 text-base">Añadir al Almacén</h3>
-                <button onclick="cerrarModalAgregar()" class="text-slate-400 hover:text-slate-600 text-sm font-bold p-1 cursor-pointer">Cerrar</button>
+    <!-- BOTTOM SHEET DIALOG (MODAL ANDROID) -->
+    <div id="modal-agregar" class="fixed inset-0 z-50 bg-black/60 hidden flex items-end justify-center transition-all p-0 backdrop-blur-xs">
+        <div class="bg-white w-full max-w-xl rounded-t-3xl p-6 space-y-5 shadow-2xl border border-slate-200 animate-slideUp">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-black text-slate-900 text-lg">Añadir al Almacén</h3>
+                <button onclick="cerrarModalAgregar()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 text-sm font-black flex items-center justify-center cursor-pointer">✕</button>
             </div>
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Nombre</label>
-                    <input id="nuevo-nombre" type="text" placeholder="Ej. Leche, Tomate..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Nombre del Alimento</label>
+                    <input id="nuevo-nombre" type="text" placeholder="Ej. Leche entera, Huevos..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Ubicación</label>
-                    <select id="nueva-ubicacion" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Ubicación de Guardado</label>
+                    <select id="nueva-ubicacion" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
                         <option value="heladera">❄️ Heladera</option>
                         <option value="alacena">🥖 Alacena</option>
                         <option value="despensa">📦 Despensa</option>
                     </select>
                 </div>
-                <button onclick="agregarAlimento()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl text-sm transition transform active:scale-95 shadow-md cursor-pointer border-none mt-2">
+                <button onclick="agregarAlimento()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black py-4 px-4 rounded-xl text-sm transition-all transform active:scale-95 shadow-lg cursor-pointer border-none uppercase tracking-wider mt-3">
                     Confirmar Guardado
                 </button>
             </div>
         </div>
     </div>
-    <!-- LÓGICA DE LA APLICACIÓN CON PERSISTENCIA LOCAL -->
+    <!-- LÓGICA CON PERSISTENCIA Y RENDERIZADO PREMIUM -->
     <script>
         let filtroActual = "heladera"; 
         let vistaActual = "inventario"; 
         let inventario = [];
 
-        // Lista de alimentos inicial por defecto (solo si la memoria está vacía)
         const stockPredeterminado = [
             { nombre: "🥚 Huevos", cantidad: 6, ubicacion: "heladera" },
             { nombre: "🥛 Leche", cantidad: 1, ubicacion: "heladera" },
@@ -117,7 +122,6 @@
             { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa" }
         ];
 
-        // Cargar los datos guardados en el teléfono inmediatamente al abrir la app
         function cargarInventarioDeMemoria() {
             const datosGuardados = localStorage.getItem("almacen_familiar_stock");
             if (datosGuardados) {
@@ -128,41 +132,45 @@
             }
         }
 
-        // Guardar el estado actual en el almacenamiento del celular
         function guardarInventarioEnMemoria() {
             localStorage.setItem("almacen_familiar_stock", JSON.stringify(inventario));
         }
 
         function navegarA(pantalla) {
             vistaActual = pantalla;
+            const btnInv = document.getElementById('nav-inventario');
+            const btnChef = document.getElementById('nav-chef');
+            
             if(pantalla === 'inventario') {
                 document.getElementById('vista-inventario').classList.remove('hidden');
                 document.getElementById('vista-chef').classList.add('hidden');
                 document.getElementById('fab-android').classList.remove('hidden');
-                document.getElementById('nav-inventario').className = "flex flex-col items-center justify-center w-full h-full text-indigo-600 font-bold transition cursor-pointer";
-                document.getElementById('nav-chef').className = "flex flex-col items-center justify-center w-full h-full text-slate-400 font-medium transition cursor-pointer";
-                document.getElementById('subtitulo-seccion').innerText = `Mi Stock • ${filtroActual.charAt(0).toUpperCase() + filtroActual.slice(1)}`;
+                btnInv.className = "flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-indigo-600 font-black transition-all bg-indigo-50/80 cursor-pointer";
+                btnChef.className = "flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-slate-400 font-bold transition-all hover:bg-slate-50 cursor-pointer";
+                document.getElementById('subtitulo-seccion').innerText = `Stock • ${filtroActual.charAt(0).toUpperCase() + filtroActual.slice(1)}`;
             } else {
                 document.getElementById('vista-inventario').classList.add('hidden');
                 document.getElementById('vista-chef').classList.remove('hidden');
                 document.getElementById('fab-android').classList.add('hidden');
-                document.getElementById('nav-inventario').className = "flex flex-col items-center justify-center w-full h-full text-slate-400 font-medium transition cursor-pointer";
-                document.getElementById('nav-chef').className = "flex flex-col items-center justify-center w-full h-full text-indigo-600 font-bold transition cursor-pointer";
+                btnInv.className = "flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-slate-400 font-bold transition-all hover:bg-slate-50 cursor-pointer";
+                btnChef.className = "flex flex-col items-center justify-center w-24 h-14 rounded-2xl text-indigo-600 font-black transition-all bg-indigo-50/80 cursor-pointer";
                 document.getElementById('subtitulo-seccion').innerText = "Chef IA • Generador";
             }
         }
 
         function cambiarFiltroUbicacion(ubicacion) {
             filtroActual = ubicacion;
+            const colores = { heladera: 'bg-blue-600 text-white border-blue-200', alacena: 'bg-amber-500 text-white border-amber-200', despensa: 'bg-emerald-600 text-white border-emerald-200' };
+            
             ['heladera', 'alacena', 'despensa'].forEach(u => {
                 const btn = document.getElementById(`chip-${u}`);
                 if(u === ubicacion) {
-                    btn.className = "px-4 py-2 rounded-full text-xs font-bold shadow-xs transition-all border border-indigo-200 bg-indigo-600 text-white cursor-pointer flex items-center gap-1.5";
+                    btn.className = `px-5 py-2.5 rounded-2xl text-xs font-black shadow-md transition-all border ${colores[u]} cursor-pointer flex items-center gap-2 scale-105`;
                 } else {
-                    btn.className = "px-4 py-2 rounded-full text-xs font-bold shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-1.5";
+                    btn.className = "px-5 py-2.5 rounded-2xl text-xs font-black shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-2";
                 }
             });
-            document.getElementById('subtitulo-seccion').innerText = `Mi Stock • ${ubicacion.charAt(0).toUpperCase() + ubicacion.slice(1)}`;
+            document.getElementById('subtitulo-seccion').innerText = `Stock • ${ubicacion.charAt(0).toUpperCase() + ubicacion.slice(1)}`;
             renderizarInventario();
         }
 
@@ -172,21 +180,21 @@
             const filtrados = inventario.map((item, index) => ({...item, originalIndex: index})).filter(item => item.ubicacion === filtroActual);
 
             if(filtrados.length === 0) {
-                listaUl.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs font-medium bg-white rounded-2xl border border-slate-200/60 shadow-2xs">No hay alimentos registrados en esta zona.</div>`;
+                listaUl.innerHTML = `<div class="text-center py-12 text-slate-400 font-bold text-sm bg-white rounded-3xl border border-slate-200/60 shadow-xs">No tienes alimentos registrados aquí.</div>`;
                 return;
             }
 
+            const badgeColores = { heladera: 'bg-blue-50 text-blue-700 border-blue-100', alacena: 'bg-amber-50 text-amber-700 border-amber-100', despensa: 'bg-emerald-50 text-emerald-700 border-emerald-100' };
+
             filtrados.forEach((item) => {
                 const li = document.createElement('li');
-                li.className = "bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-2xs transition active:bg-slate-50";
+                li.className = "bg-white p-4 rounded-3xl border border-slate-100 flex justify-between items-center shadow-xs transition-all active:bg-slate-50/80 border-b-2 border-b-slate-200/40";
                 li.innerHTML = `
-                    <div class="flex flex-col">
-                        <span class="font-semibold text-slate-900 text-sm tracking-tight">${item.nombre}</span>
-                    </div>
+                    <span class="font-bold text-slate-900 text-sm tracking-tight">${item.nombre}</span>
                     <div class="flex items-center gap-3.5">
-                        <button onclick="cambiarCantidad(${item.originalIndex}, -1)" class="w-8 h-8 rounded-xl bg-slate-100 active:bg-slate-200 text-slate-800 font-bold flex items-center justify-center border border-slate-200 text-sm cursor-pointer border-none shadow-3xs">-</button>
-                        <span class="font-extrabold text-slate-900 w-5 text-center text-sm">${item.cantidad}</span>
-                        <button onclick="cambiarCantidad(${item.originalIndex}, 1)" class="w-8 h-8 rounded-xl bg-slate-100 active:bg-slate-200 text-slate-800 font-bold flex items-center justify-center border border-slate-200 text-sm cursor-pointer border-none shadow-3xs">+</button>
+                        <button onclick="cambiarCantidad(${item.originalIndex}, -1)" class="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-black flex items-center justify-center border border-slate-200 shadow-xs transition-all active:scale-95 text-base">-</button>
+                        <span class="font-black text-base text-slate-900 px-3 py-1 rounded-full border ${badgeColores[filtroActual]} min-w-[40px] text-center shadow-2xs">${item.cantidad}</span>
+                        <button onclick="cambiarCantidad(${item.originalIndex}, 1)" class="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-800 font-black flex items-center justify-center border border-slate-200 shadow-xs transition-all active:scale-95 text-base">+</button>
                     </div>
                 `;
                 listaUl.appendChild(li);
@@ -195,11 +203,8 @@
 
         function cambiarCantidad(index, cambio) {
             inventario[index].cantidad += cambio;
-            if (inventario[index].cantidad < 0) {
-                // Si la cantidad llega a 0, lo dejamos en 0 pero no lo borramos de la lista por si vuelven a comprar
-                inventario[index].cantidad = 0;
-            }
-            guardarInventarioEnMemoria(); // Guardado automático
+            if (inventario[index].cantidad < 0) inventario[index].cantidad = 0;
+            guardarInventarioEnMemoria();
             renderizarInventario();
         }
 
@@ -212,8 +217,7 @@
             if (!nombreInput.value.trim()) return;
             
             inventario.push({ nombre: nombreInput.value.trim(), cantidad: 1, ubicacion: ubicacionSelect.value });
-            
-            guardarInventarioEnMemoria(); // Guardado automático
+            guardarInventarioEnMemoria();
             cambiarFiltroUbicacion(ubicacionSelect.value);
             
             nombreInput.value = '';
@@ -228,9 +232,8 @@
             btn.innerText = "🤖 Cocinando ideas...";
             btn.disabled = true;
             contenedor.classList.remove('hidden');
-            resultadoTexto.innerHTML = `<span class="text-indigo-600 font-semibold animate-pulse text-xs">El chef privado de Vercel está procesando tus ingredientes...</span>`;
+            resultadoTexto.innerHTML = `<div class="flex items-center gap-2 text-indigo-600 font-bold text-xs animate-pulse"><svg class="animate-spin h-4 w-4" xmlns="http://w3.org" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Creando menú con tus ingredientes...</div>`;
 
-            // Filtrar solo los ingredientes que guardaste con cantidad mayor a 0
             const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
             const listaTexto = disponibles.join(", ");
 
@@ -243,20 +246,19 @@
                 const data = await response.json();
                 if (data.receta) {
                     let texto = data.receta;
-                    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 font-bold">$1</strong>');
+                    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 font-extrabold">$1</strong>');
                     resultadoTexto.innerHTML = texto;
                 } else {
-                    resultadoTexto.innerHTML = `❌ Mensaje del servidor: ${data.error || 'Intenta nuevamente.'}`;
+                    resultadoTexto.innerHTML = `❌ Error en el servidor backend: ${data.error || 'Intenta de nuevo.'}`;
                 }
             } catch (error) {
-                resultadoTexto.innerHTML = "❌ Error de comunicación con el backend.";
+                resultadoTexto.innerHTML = "❌ Error de comunicación con Vercel.";
             } finally {
-                btn.innerText = "✨ Sugerir Recetas con lo que Hay";
+                btn.innerText = "✨ Sugerir Menú de Cocina";
                 btn.disabled = false;
             }
         }
 
-        // Ejecución inicial al abrir la app
         cargarInventarioDeMemoria();
         renderizarInventario();
     </script>
