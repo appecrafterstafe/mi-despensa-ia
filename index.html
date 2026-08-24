@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Despensa Inteligente 🍳</title>
+    <!-- Tailwind CSS para un diseño moderno y móvil-amigable -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- Encabezado -->
+        <header class="text-center py-5 bg-white rounded-2xl shadow-xs border border-gray-200">
+            <h1 class="text-3xl font-extrabold text-gray-800">🏡 Almacén Familiar</h1>
+            <p class="text-sm text-gray-500 mt-1">Control de alimentos en tiempo real e ideas con IA</p>
+        </header>
+
+        <!-- Bloque de Inventario por Zonas -->
+        <main class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- SECCIÓN: HELADERA -->
+            <section class="bg-blue-50 p-5 rounded-2xl border border-blue-200 shadow-xs">
+                <h2 class="text-lg font-bold text-blue-800 flex items-center gap-2 mb-3">❄️ Heladera</h2>
+                <ul class="space-y-2 text-gray-700">
+                    <li class="bg-white p-2.5 rounded-lg border border-blue-100 flex justify-between items-center">
+                        <span>🥚 Huevos</span> <span class="font-semibold bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-sm">6 u</span>
+                    </li>
+                    <li class="bg-white p-2.5 rounded-lg border border-blue-100 flex justify-between items-center">
+                        <span>🥛 Leche</span> <span class="font-semibold bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-sm">1 u</span>
+                    </li>
+                    <li class="bg-white p-2.5 rounded-lg border border-blue-100 flex justify-between items-center">
+                        <span>🧅 Cebolla</span> <span class="font-semibold bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-sm">3 u</span>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- SECCIÓN: ALACENA -->
+            <section class="bg-amber-50 p-5 rounded-2xl border border-amber-200 shadow-xs">
+                <h2 class="text-lg font-bold text-amber-800 flex items-center gap-2 mb-3">🥖 Alacena</h2>
+                <ul class="space-y-2 text-gray-700">
+                    <li class="bg-white p-2.5 rounded-lg border border-amber-100 flex justify-between items-center">
+                        <span>🌾 Arroz</span> <span class="font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-sm">1 u</span>
+                    </li>
+                    <li class="bg-white p-2.5 rounded-lg border border-amber-100 flex justify-between items-center">
+                        <span>🍝 Fideos</span> <span class="font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-sm">2 u</span>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- SECCIÓN: DESPENSA -->
+            <section class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 shadow-xs">
+                <h2 class="text-lg font-bold text-emerald-800 flex items-center gap-2 mb-3">📦 Despensa General</h2>
+                <ul class="space-y-2 text-gray-700">
+                    <li class="bg-white p-2.5 rounded-lg border border-emerald-100 flex justify-between items-center">
+                        <span>🥫 Tomate en lata</span> <span class="font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-sm">1 u</span>
+                    </li>
+                </ul>
+            </section>
+
+        </main>
+
+        <!-- SECCIÓN DE IA: RECETAS -->
+        <section class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">🤖 Generador de Recetas Inteligente</h2>
+            <p class="text-gray-500 text-sm mb-4">La IA analizará los ingredientes activos listados arriba para armarte un menú sugerido al instante.</p>
+            
+            <button id="btn-ia" onclick="generarRecetasConIA()" class="w-full bg-linear-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition transform active:scale-95 cursor-pointer">
+                ✨ Sugerir Recetas con lo que Hay
+            </button>
+
+            <!-- Caja de resultados de la IA -->
+            <div id="contenedor-recetas" class="mt-5 p-5 bg-gray-50 rounded-xl border border-dashed border-gray-300 hidden">
+                <h3 class="font-bold text-gray-700 mb-2">🍽️ Sugerencias del Chef IA:</h3>
+                <div id="resultado-texto" class="text-gray-600 text-sm whitespace-pre-line space-y-2 leading-relaxed">
+                    <!-- Aquí se pintarán los resultados de las recetas -->
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- LÓGICA EN JAVASCRIPT -->
+    <script>
+        const ingredientesDisponibles = ["Huevos", "Leche", "Cebolla", "Arroz", "Fideos", "Tomate en lata"];
+
+        async function generarRecetasConIA() {
+            const btn = document.getElementById('btn-ia');
+            const contenedor = document.getElementById('contenedor-recetas');
+            const resultadoTexto = document.getElementById('resultado-texto');
+
+            // ⚠️ IMPORTANTE: Poné tu clave de Gemini acá adentro entre las comillas (dejando las comillas fijas)
+            const GEMINI_API_KEY = "AQ.Ab8RN6JwCyj8ZIJEcfR7BCNHAcNpdOd4qzg";
+
+            btn.innerText = "🤖 El chef está pensando...";
+            btn.disabled = true;
+            contenedor.classList.remove('hidden');
+            resultadoTexto.innerHTML = `<span class="text-orange-500 font-medium animate-pulse">Conectando con la cocina de Gemini...</span>`;
+
+            const listaTexto = ingredientesDisponibles.join(", ");
+            const promptBase = `Eres un chef experto en cocina de aprovechamiento del hogar. Sugiere 2 recetas sencillas y rápidas basadas ESTRICTAMENTE en estos ingredientes disponibles: ${listaTexto}. Puedes asumir que el usuario tiene sal, pimienta, agua y aceite. Sé breve y directo en los pasos. Por favor, usa formato claro con títulos en negrita (**texto**) y viñetas para que se lea lindo.`;
+
+            // Usamos la API web estable y compatible para navegadores
+            const url = `https://googleapis.com{GEMINI_API_KEY}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptBase }] }]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    let textoFormateado = data.candidates[0].content.parts[0].text;
+                    
+                    // Convertir marcas de texto a HTML para que se vea ordenado en pantalla
+                    textoFormateado = textoFormateado.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    textoFormateado = textoFormateado.replace(/^- (.*)$/gim, '• $1');
+
+                    resultadoTexto.innerHTML = textoFormateado;
+                } else {
+                    resultadoTexto.innerHTML = "❌ Hubo un inconveniente al procesar la respuesta de la IA. Comprobá los logs.";
+                }
+
+            } catch (error) {
+                console.error(error);
+                resultadoTexto.innerHTML = `❌ Error de conexión con Gemini.`;
+            } finally {
+                btn.innerText = "✨ Sugerir Recetas con lo que Hay";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
