@@ -1,4 +1,187 @@
-<!DOCTYPE html>
+<!DOC<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mi Despensa Inteligente 🍳</title>
+    <!-- Tailwind CSS v4 para diseño móvil adaptativo -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans p-3 md:p-8 select-none">
+
+    <div class="max-w-4xl mx-auto space-y-5">
+        
+        <!-- Encabezado Compacto para Celular -->
+        <header class="text-center py-5 bg-white rounded-2xl shadow-sm border border-slate-200">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800">🏡 Almacén Familiar</h1>
+            <p class="text-xs text-slate-500 mt-1">Control de stock e ideas con IA</p>
+        </header>
+
+        <!-- Formulario Rápido para Añadir Alimentos -->
+        <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <h3 class="text-sm font-bold text-slate-700">➕ Agregar nuevo alimento:</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input id="nuevo-nombre" type="text" placeholder="Ej. Tomate, Leche..." class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-orange-400">
+                <select id="nueva-ubicacion" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-orange-400">
+                    <option value="heladera">❄️ Heladera</option>
+                    <option value="alacena">🥖 Alacena</option>
+                    <option value="despensa">📦 Despensa</option>
+                </select>
+                <button onclick="agregarAlimento()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl text-sm transition transform active:scale-95 cursor-pointer">
+                    Añadir al Stock
+                </button>
+            </div>
+        </section>
+
+        <!-- Contenedores Dinámicos (Se adaptan a Celular/Tablet/PC) -->
+        <main class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- HELADERA -->
+            <section class="bg-blue-50/80 p-4 rounded-2xl border border-blue-200 shadow-sm">
+                <h2 class="text-base font-bold text-blue-800 flex items-center gap-2 mb-3">❄️ Heladera</h2>
+                <ul id="lista-heladera" class="space-y-2"></ul>
+            </section>
+
+            <!-- ALACENA -->
+            <section class="bg-amber-50/80 p-4 rounded-2xl border border-amber-200 shadow-sm">
+                <h2 class="text-base font-bold text-amber-800 flex items-center gap-2 mb-3">🥖 Alacena</h2>
+                <ul id="lista-alacena" class="space-y-2"></ul>
+            </section>
+
+            <!-- DESPENSA -->
+            <section class="bg-emerald-50/80 p-4 rounded-2xl border border-emerald-200 shadow-sm">
+                <h2 class="text-base font-bold text-emerald-800 flex items-center gap-2 mb-3">📦 Despensa</h2>
+                <ul id="lista-despensa" class="space-y-2"></ul>
+            </section>
+
+        </main>
+
+        <!-- SECCIÓN DE IA: RECETAS -->
+        <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-800 mb-1">🤖 Chef Inteligente</h2>
+            <p class="text-slate-500 text-xs mb-4">Analiza lo que tienes activo en tus listas para armar un menú.</p>
+            
+            <button id="btn-ia" onclick="generarRecetasConIA()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-4 rounded-xl shadow-md transition transform active:scale-95 text-center text-sm cursor-pointer">
+                ✨ Sugerir Recetas con lo que Hay
+            </button>
+
+            <div id="contenedor-recetas" class="mt-4 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 hidden">
+                <h3 class="font-bold text-sm text-slate-700 mb-2">🍽️ Sugerencias del Chef IA:</h3>
+                <div id="resultado-texto" class="text-slate-600 text-xs whitespace-pre-line space-y-2 leading-relaxed"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- LÓGICA DINÁMICA -->
+    <script>
+        // Base de datos reactiva en memoria del teléfono/navegador
+        let inventario = [
+            { nombre: "🥚 Huevos", cantidad: 6, ubicacion: "heladera" },
+            { nombre: "🥛 Leche", cantidad: 1, ubicacion: "heladera" },
+            { nombre: "🧅 Cebolla", cantidad: 3, ubicacion: "heladera" },
+            { nombre: "🌾 Arroz", cantidad: 1, ubicacion: "alacena" },
+            { nombre: "🍝 Fideos", cantidad: 2, ubicacion: "alacena" },
+            { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa" }
+        ];
+
+        // Función para dibujar los elementos en la pantalla de forma táctil
+        function renderizarInventario() {
+            const zonas = { heladera: 'lista-heladera', alacena: 'lista-alacena', despensa: 'lista-despensa' };
+            Object.values(zonas).forEach(id => document.getElementById(id).innerHTML = '');
+
+            inventario.forEach((item, index) => {
+                const listaId = zonas[item.ubicacion];
+                const li = document.createElement('li');
+                li.className = "bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center shadow-xs text-sm";
+                li.innerHTML = `
+                    <span class="font-medium text-slate-700">${item.nombre}</span>
+                    <div class="flex items-center gap-3">
+                        <button onclick="cambiarCantidad(${index}, -1)" class="w-8 h-8 rounded-full bg-slate-100 active:bg-slate-200 text-slate-800 font-bold flex items-center justify-center border border-slate-200 text-base cursor-pointer">-</button>
+                        <span class="font-bold text-slate-800 w-6 text-center">${item.cantidad}</span>
+                        <button onclick="cambiarCantidad(${index}, 1)" class="w-8 h-8 rounded-full bg-slate-100 active:bg-slate-200 text-slate-800 font-bold flex items-center justify-center border border-slate-200 text-base cursor-pointer">+</button>
+                    </div>
+                `;
+                document.getElementById(listaId).appendChild(li);
+            });
+        }
+
+        function cambiarCantidad(index, cambio) {
+            inventario[index].cantidad += cambio;
+            if (inventario[index].cantidad < 0) inventario[index].cantidad = 0;
+            renderizarInventario();
+        }
+
+        function agregarAlimento() {
+            const nombreInput = document.getElementById('nuevo-nombre');
+            const ubicacionSelect = document.getElementById('nueva-ubicacion');
+            
+            if (!nombreInput.value.trim()) return;
+
+            inventario.push({
+                nombre: nombreInput.value.trim(),
+                cantidad: 1,
+                ubicacion: ubicacionSelect.value
+            });
+
+            nombreInput.value = '';
+            renderizarInventario();
+        }
+
+        async function generarRecetasConIA() {
+            const btn = document.getElementById('btn-ia');
+            const contenedor = document.getElementById('contenedor-recetas');
+            const resultadoTexto = document.getElementById('resultado-texto');
+
+            // ⚠️ PEGA AQUÍ TU API KEY DE GEMINI COMPLETA:
+            const GEMINI_API_KEY = "PEGA_AQUI_TU_API_KEY_DE_GEMINI";
+
+            btn.innerText = "🤖 Armando recetas...";
+            btn.disabled = true;
+            contenedor.classList.remove('hidden');
+            resultadoTexto.innerHTML = `<span class="text-orange-500 font-medium animate-pulse">Consultando ingredientes actuales...</span>`;
+
+            // Filtrar dinámicamente solo lo que realmente hay en casa (cantidad > 0)
+            const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
+            
+            if (disponibles.length === 0) {
+                resultadoTexto.innerHTML = "❌ No hay ingredientes en stock para cocinar.";
+                btn.innerText = "✨ Sugerir Recetas con lo que Hay";
+                btn.disabled = false;
+                return;
+            }
+
+            const promptBase = `Eres un chef de hogar experto. Sugiere 2 recetas cortas y fáciles usando exclusivamente algunos de estos ingredientes: ${disponibles.join(", ")}. Asume sal, aceite y agua. Sé breve y estructurado.`;
+            const url = `https://googleapis.com{GEMINI_API_KEY}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptBase }] }] })
+                });
+                const data = await response.json();
+                if (data.candidates && data.candidates.content.parts.text) {
+                    let texto = data.candidates.content.parts.text;
+                    texto = texto.replace(/\*\*(.*?)\*\"/g, '<strong class="text-slate-800 font-bold">$1</strong>');
+                    resultadoTexto.innerHTML = texto;
+                } else {
+                    resultadoTexto.innerHTML = "❌ Revisa los datos de stock e intenta nuevamente.";
+                }
+            } catch (error) {
+                resultadoTexto.innerHTML = "❌ Error de conexión. Revisa la clave de la IA.";
+            } finally {
+                btn.innerText = "✨ Sugerir Recetas con lo que Hay";
+                btn.disabled = false;
+            }
+        }
+
+        // Carga inicial al abrir la app
+        renderizarInventario();
+    </script>
+</body>
+</html>
+TYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
