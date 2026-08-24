@@ -2,61 +2,110 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mi Despensa Inteligente 🍳</title>
-    <script src="https://jsdelivr.net"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Almacén Familiar</title>
+    <script src="https://tailwindcss.com"></script>
+    <style>
+        body { overscroll-behavior-y: contain; -webkit-tap-highlight-color: transparent; }
+    </style>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans p-3 md:p-8 select-none">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col pb-20 select-none">
 
-    <div class="max-w-4xl mx-auto space-y-5">
+    <!-- BARRA SUPERIOR -->
+    <header class="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-4 flex justify-between items-center shadow-xs">
+        <div>
+            <h1 class="text-xl font-bold text-slate-950 tracking-tight">🏡 Almacén Familiar</h1>
+            <p id="subtitulo-seccion" class="text-xs font-medium text-indigo-600">Mi Stock • Heladera</p>
+        </div>
+        <div class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1 rounded-full border border-emerald-200 shadow-xs">
+            🟢 Conectado
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="flex-1 overflow-y-auto p-4 max-w-xl mx-auto w-full">
         
-        <!-- Encabezado -->
-        <header class="text-center py-5 bg-white rounded-2xl shadow-sm border border-slate-200">
-            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800">🏡 Almacén Familiar</h1>
-            <p class="text-xs text-slate-500 mt-1">Control de stock e ideas con IA (Seguro y Compartible)</p>
-        </header>
-
-        <!-- Formulario Rápido -->
-        <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-            <h3 class="text-sm font-bold text-slate-700">➕ Agregar nuevo alimento:</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <input id="nuevo-nombre" type="text" placeholder="Ej. Tomate..." class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-orange-400">
-                <select id="nueva-ubicacion" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-orange-400">
-                    <option value="heladera">❄️ Heladera</option>
-                    <option value="alacena">🥖 Alacena</option>
-                    <option value="despensa">📦 Despensa</option>
-                </select>
-                <button onclick="agregarAlimento()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl text-sm transition transform active:scale-95 cursor-pointer">
-                    Añadir al Stock
+        <!-- PANTALLA 1: EL INVENTARIO -->
+        <div id="vista-inventario" class="space-y-4">
+            <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <button onclick="cambiarFiltroUbicacion('heladera')" id="chip-heladera" class="px-4 py-2 rounded-full text-xs font-bold shadow-xs transition-all border border-indigo-200 bg-indigo-600 text-white cursor-pointer flex items-center gap-1.5">
+                    ❄️ Heladera
+                </button>
+                <button onclick="cambiarFiltroUbicacion('alacena')" id="chip-alacena" class="px-4 py-2 rounded-full text-xs font-bold shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-1.5">
+                    🥖 Alacena
+                </button>
+                <button onclick="cambiarFiltroUbicacion('despensa')" id="chip-despensa" class="px-4 py-2 rounded-full text-xs font-bold shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-1.5">
+                    📦 Despensa
                 </button>
             </div>
-        </section>
+            <ul id="lista-productos-movil" class="space-y-2.5"></ul>
+        </div>
 
-        <!-- Inventario -->
-        <main class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <section class="bg-blue-50/80 p-4 rounded-2xl border border-blue-200 shadow-sm"><h2 class="text-base font-bold text-blue-800 mb-3">❄️ Heladera</h2><ul id="lista-heladera" class="space-y-2"></ul></section>
-            <section class="bg-amber-50/80 p-4 rounded-2xl border border-amber-200 shadow-sm"><h2 class="text-base font-bold text-amber-800 mb-3">🥖 Alacena</h2><ul id="lista-alacena" class="space-y-2"></ul></section>
-            <section class="bg-emerald-50/80 p-4 rounded-2xl border border-emerald-200 shadow-sm"><h2 class="text-base font-bold text-emerald-800 mb-3">📦 Despensa</h2><ul id="lista-despensa" class="space-y-2"></ul></section>
-        </main>
-
-        <!-- IA RECETAS -->
-        <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-bold text-slate-800 mb-1">🤖 Chef Inteligente</h2>
-            <p class="text-slate-500 text-xs mb-4">La IA leerá tu stock de forma segura mediante nuestro servidor privado.</p>
-            
-            <button id="btn-ia" onclick="generarRecetasConIA()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-4 rounded-xl shadow-md transition transform active:scale-95 text-center text-sm cursor-pointer">
-                ✨ Sugerir Recetas con lo que Hay
-            </button>
-
-            <div id="contenedor-recetas" class="mt-4 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 hidden">
-                <h3 class="font-bold text-sm text-slate-700 mb-2">🍽️ Sugerencias del Chef IA:</h3>
-                <div id="resultado-texto" class="text-slate-600 text-xs whitespace-pre-line space-y-2 leading-relaxed"></div>
+        <!-- PANTALLA 2: EL CHEF IA -->
+        <div id="vista-chef" class="hidden space-y-4">
+            <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
+                <h2 class="text-lg font-bold flex items-center gap-2 text-indigo-300">🤖 Chef Inteligente</h2>
+                <p class="text-slate-300 text-xs mt-1 leading-relaxed">El backend seguro de Vercel leerá tu stock actual para sugerirte platos instantáneos.</p>
+                <button id="btn-ia" onclick="generarRecetasConIA()" class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition transform active:scale-95 text-center text-sm cursor-pointer block border-none">
+                    ✨ Sugerir Recetas con lo que Hay
+                </button>
             </div>
-        </section>
+            <div id="contenedor-recetas" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hidden">
+                <h3 class="font-bold text-sm text-slate-800 mb-3 border-b border-slate-100 pb-2 flex items-center gap-1.5">🍽️ Menú Recomendado:</h3>
+                <div id="resultado-texto" class="text-slate-600 text-sm whitespace-pre-line space-y-2 leading-relaxed"></div>
+            </div>
+        </div>
 
+    </main>
+
+    <!-- BOTÓN FLOTANTE ANDROID (FAB) -->
+    <button onclick="abrirModalAgregar()" id="fab-android" class="fixed bottom-24 right-5 z-50 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl shadow-lg flex items-center justify-center transition-all transform active:scale-90 cursor-pointer border-none">
+        <span class="text-3xl font-light">+</span>
+    </button>
+
+    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 h-16 flex items-center justify-around shadow-lg px-2 pb-safe">
+        <button onclick="navegarA('inventario')" id="nav-inventario" class="flex flex-col items-center justify-center w-full h-full text-indigo-600 font-bold transition cursor-pointer">
+            <span class="text-xl">📦</span>
+            <span class="text-[10px] mt-0.5 tracking-wide">Mi Stock</span>
+        </button>
+        <button onclick="navegarA('chef')" id="nav-chef" class="flex flex-col items-center justify-center w-full h-full text-slate-400 font-medium transition cursor-pointer">
+            <span class="text-xl">🍳</span>
+            <span class="text-[10px] mt-0.5 tracking-wide">Chef IA</span>
+        </button>
+    </nav>
+
+    <!-- VENTANA EMERGENTE MÓVIL (BOTTOM SHEET) -->
+    <div id="modal-agregar" class="fixed inset-0 z-50 bg-black/50 hidden flex items-end justify-center transition-all p-0">
+        <div class="bg-white w-full max-w-xl rounded-t-3xl p-5 space-y-4 shadow-2xl transform translate-y-0 transition-transform border border-slate-200">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h3 class="font-bold text-slate-900 text-base">Añadir al Almacén</h3>
+                <button onclick="cerrarModalAgregar()" class="text-slate-400 hover:text-slate-600 text-sm font-bold p-1 cursor-pointer">Cerrar</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Nombre</label>
+                    <input id="nuevo-nombre" type="text" placeholder="Ej. Leche, Tomate..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Ubicación</label>
+                    <select id="nueva-ubicacion" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                        <option value="heladera">❄️ Heladera</option>
+                        <option value="alacena">🥖 Alacena</option>
+                        <option value="despensa">📦 Despensa</option>
+                    </select>
+                </div>
+                <button onclick="agregarAlimento()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl text-sm transition transform active:scale-95 shadow-md cursor-pointer border-none mt-2">
+                    Confirmar Guardado
+                </button>
+            </div>
+        </div>
     </div>
-
+    <!-- LÓGICA DE LA APLICACIÓN -->
     <script>
+        let filtroActual = "heladera"; 
+        let vistaActual = "inventario"; 
+
         let inventario = [
             { nombre: "🥚 Huevos", cantidad: 6, ubicacion: "heladera" },
             { nombre: "🥛 Leche", cantidad: 1, ubicacion: "heladera" },
@@ -66,22 +115,63 @@
             { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa" }
         ];
 
+        function navegarA(pantalla) {
+            vistaActual = pantalla;
+            if(pantalla === 'inventario') {
+                document.getElementById('vista-inventario').classList.remove('hidden');
+                document.getElementById('vista-chef').classList.add('hidden');
+                document.getElementById('fab-android').classList.remove('hidden');
+                document.getElementById('nav-inventario').className = "flex flex-col items-center justify-center w-full h-full text-indigo-600 font-bold transition cursor-pointer";
+                document.getElementById('nav-chef').className = "flex flex-col items-center justify-center w-full h-full text-slate-400 font-medium transition cursor-pointer";
+                document.getElementById('subtitulo-seccion').innerText = `Mi Stock • ${filtroActual.charAt(0).toUpperCase() + filtroActual.slice(1)}`;
+            } else {
+                document.getElementById('vista-inventario').classList.add('hidden');
+                document.getElementById('vista-chef').classList.remove('hidden');
+                document.getElementById('fab-android').classList.add('hidden');
+                document.getElementById('nav-inventario').className = "flex flex-col items-center justify-center w-full h-full text-slate-400 font-medium transition cursor-pointer";
+                document.getElementById('nav-chef').className = "flex flex-col items-center justify-center w-full h-full text-indigo-600 font-bold transition cursor-pointer";
+                document.getElementById('subtitulo-seccion').innerText = "Chef IA • Generador";
+            }
+        }
+
+        function cambiarFiltroUbicacion(ubicacion) {
+            filtroActual = ubicacion;
+            ['heladera', 'alacena', 'despensa'].forEach(u => {
+                const btn = document.getElementById(`chip-${u}`);
+                if(u === ubicacion) {
+                    btn.className = "px-4 py-2 rounded-full text-xs font-bold shadow-xs transition-all border border-indigo-200 bg-indigo-600 text-white cursor-pointer flex items-center gap-1.5";
+                } else {
+                    btn.className = "px-4 py-2 rounded-full text-xs font-bold shadow-xs transition-all border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-1.5";
+                }
+            });
+            document.getElementById('subtitulo-seccion').innerText = `Mi Stock • ${ubicacion.charAt(0).toUpperCase() + ubicacion.slice(1)}`;
+            renderizarInventario();
+        }
+
         function renderizarInventario() {
-            const zonas = { heladera: 'lista-heladera', alacena: 'lista-alacena', despensa: 'lista-despensa' };
-            Object.values(zonas).forEach(id => document.getElementById(id).innerHTML = '');
-            inventario.forEach((item, index) => {
-                const listaId = zonas[item.ubicacion];
+            const listaUl = document.getElementById('lista-productos-movil');
+            listaUl.innerHTML = '';
+            const filtrados = inventario.map((item, index) => ({...item, originalIndex: index})).filter(item => item.ubicacion === filtroActual);
+
+            if(filtrados.length === 0) {
+                listaUl.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs font-medium bg-white rounded-2xl border border-slate-200/60 shadow-2xs">No hay alimentos registrados en esta zona.</div>`;
+                return;
+            }
+
+            filtrados.forEach((item) => {
                 const li = document.createElement('li');
-                li.className = "bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center shadow-xs text-sm";
+                li.className = "bg-white p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center shadow-2xs transition active:bg-slate-50";
                 li.innerHTML = `
-                    <span class="font-medium text-slate-700">${item.nombre}</span>
-                    <div class="flex items-center gap-3">
-                        <button onclick="cambiarCantidad(${index}, -1)" class="w-8 h-8 rounded-full bg-slate-100 active:bg-slate-200 text-slate-800 font-bold flex items-center justify-center border border-slate-200 text-base cursor-pointer">-</button>
-                        <span class="font-bold text-slate-800 w-6 text-center">${item.cantidad}</span>
-                        <button onclick="cambiarCantidad(${index}, 1)" class="w-8 h-8 rounded-full bg-slate-100 active:bg-slate-200 text-slate-800 font-bold flex items-center justify-center border border-slate-200 text-base cursor-pointer">+</button>
+                    <div class="flex flex-col">
+                        <span class="font-semibold text-slate-900 text-sm tracking-tight">${item.nombre}</span>
+                    </div>
+                    <div class="flex items-center gap-3.5">
+                        <button onclick="cambiarCantidad(${item.originalIndex}, -1)" class="w-8 h-8 rounded-xl bg-slate-100 active:bg-slate-200 text-slate-800 font-bold flex items-center justify-center border border-slate-200 text-sm cursor-pointer border-none shadow-3xs">-</button>
+                        <span class="font-extrabold text-slate-900 w-5 text-center text-sm">${item.cantidad}</span>
+                        <button onclick="cambiarCantidad(${item.originalIndex}, 1)" class="w-8 h-8 rounded-xl bg-slate-100 active:bg-slate-200 text-slate-800 font-bold flex items-center justify-center border border-slate-200 text-sm cursor-pointer border-none shadow-3xs">+</button>
                     </div>
                 `;
-                document.getElementById(listaId).appendChild(li);
+                listaUl.appendChild(li);
             });
         }
 
@@ -91,13 +181,17 @@
             renderizarInventario();
         }
 
+        function abrirModalAgregar() { document.getElementById('modal-agregar').classList.remove('hidden'); }
+        function cerrarModalAgregar() { document.getElementById('modal-agregar').classList.add('hidden'); }
+
         function agregarAlimento() {
             const nombreInput = document.getElementById('nuevo-nombre');
             const ubicacionSelect = document.getElementById('nueva-ubicacion');
             if (!nombreInput.value.trim()) return;
             inventario.push({ nombre: nombreInput.value.trim(), cantidad: 1, ubicacion: ubicacionSelect.value });
+            cambiarFiltroUbicacion(ubicacionSelect.value);
             nombreInput.value = '';
-            renderizarInventario();
+            cerrarModalAgregar();
         }
 
         async function generarRecetasConIA() {
@@ -105,35 +199,30 @@
             const contenedor = document.getElementById('contenedor-recetas');
             const resultadoTexto = document.getElementById('resultado-texto');
 
-            btn.innerText = "🤖 El chef está pensando...";
+            btn.innerText = "🤖 Cocinando ideas...";
             btn.disabled = true;
             contenedor.classList.remove('hidden');
-            resultadoTexto.innerHTML = `<span class="text-orange-500 font-medium animate-pulse">Enviando ingredientes al servidor seguro...</span>`;
+            resultadoTexto.innerHTML = `<span class="text-indigo-600 font-semibold animate-pulse text-xs">El chef privado de Vercel está procesando tus ingredientes...</span>`;
 
             const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
             const listaTexto = disponibles.join(", ");
 
-            // 🌐 Apuntamos a la función de Vercel de forma relativa
-            const url = `/api/receta`;
-
             try {
-                const response = await fetch(url, {
+                const response = await fetch('/api/receta', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ingredientes: listaTexto })
                 });
-                
                 const data = await response.json();
-
                 if (data.receta) {
                     let texto = data.receta;
-                    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800 font-bold">$1</strong>');
+                    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 font-bold">$1</strong>');
                     resultadoTexto.innerHTML = texto;
                 } else {
-                    resultadoTexto.innerHTML = `❌ Error del servidor: ${data.error || 'Problema desconocido'}`;
+                    resultadoTexto.innerHTML = `❌ Mensaje del servidor: ${data.error || 'Intenta nuevamente.'}`;
                 }
             } catch (error) {
-                resultadoTexto.innerHTML = "❌ Error al conectar con el backend de Vercel.";
+                resultadoTexto.innerHTML = "❌ Error de comunicación con el backend.";
             } finally {
                 btn.innerText = "✨ Sugerir Recetas con lo que Hay";
                 btn.disabled = false;
