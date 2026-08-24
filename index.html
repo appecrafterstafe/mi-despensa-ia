@@ -268,52 +268,64 @@ TYPE html>
     <script>
         const ingredientesDisponibles = ["Huevos", "Leche", "Cebolla", "Arroz", "Fideos", "Tomate en lata"];
 
-        async function generarRecetasConIA() {
-            const btn = document.getElementById('btn-ia');
-            const contenedor = document.getElementById('contenedor-recetas');
-            const resultadoTexto = document.getElementById('resultado-texto');
+     async function generarRecetasConIA() {
+    const btn = document.getElementById('btn-ia');
+    const contenedor = document.getElementById('contenedor-recetas');
+    const resultadoTexto = document.getElementById('resultado-texto');
 
-            // ⚠️ ASEGURATE DE QUE ESTA CLAVE SEA EXACTAMENTE LA MISMA DE TU ARCHIVO .ENV ANTERIOR
-            const GEMINI_API_KEY = "AIzaSy" + "D..." // Coloca tu clave real completa aquí dentro
+    // ⚠️ COPIÁ TU CLAVE COMPLETA DE GOOGLE AI STUDIO AQUÍ ADENTRO:
+    const GEMINI_API_KEY = "AIzaSyD..."; 
 
-            btn.innerText = "🤖 El chef está pensando...";
-            btn.disabled = true;
-            contenedor.classList.remove('hidden');
-            resultadoTexto.innerHTML = `<span class="text-orange-500 font-medium animate-pulse">Conectando con la cocina de Gemini...</span>`;
+    btn.innerText = "🤖 El chef está pensando...";
+    btn.disabled = true;
+    contenedor.classList.remove('hidden');
+    resultadoTexto.innerHTML = `<span class="text-orange-500 font-medium animate-pulse">Conectando con la cocina de Gemini...</span>`;
 
-            const listaTexto = ingredientesDisponibles.join(", ");
-            const promptBase = "Sugiere 2 recetas simples con estos ingredientes: " + listaTexto + ". Sé breve.";
+    // Filtramos los ingredientes reales del stock
+    const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
+    const listaTexto = disponibles.join(", ");
+    
+    const promptBase = `Eres un chef de hogar experto. Sugiere 2 recetas cortas y fáciles usando exclusivamente algunos de estos ingredientes: ${listaTexto}. Asume sal, aceite y agua. Sé breve y estructurado.`;
 
-            // Endpoint unificado v1 para peticiones web directas
-            const url = `https://googleapis.com{GEMINI_API_KEY}`;
+    // Endpoint universal de Google para llamadas web
+    const url = `https://googleapis.com`;
 
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptBase }] }]
-                    })
-                });
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-goog-api-key': GEMINI_API_KEY // Enviamos la credencial en la cabecera segura requerida por Google
+            },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: promptBase }] }]
+            })
+        });
 
-                const data = await response.json();
+        const data = await response.json();
 
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    let textoFormateado = data.candidates[0].content.parts[0].text;
-                    textoFormateado = textoFormateado.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800 font-bold">$1</strong>');
-                    resultadoTexto.innerHTML = textoFormateado;
-                } else {
-                    resultadoTexto.innerHTML = "❌ Error en los datos recibidos de la IA.";
-                }
-
-            } catch (error) {
-                console.error(error);
-                resultadoTexto.innerHTML = `❌ Error de conexión. Revisa si tu API Key está completa.`;
-            } finally {
-                btn.innerText = "✨ Sugerir Recetas con lo que Hay";
-                btn.disabled = false;
-            }
+        if (data.candidates && data.candidates[0].content.parts[0].text) {
+            let textoFormateado = data.candidates[0].content.parts[0].text;
+            
+            // Reemplazos estéticos sencillos para limpiar los textos de la IA
+            textoFormateado = textoFormateado.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800 font-bold">$1</strong>');
+            
+            resultadoTexto.innerHTML = textoFormateado;
+        } else if (data.error) {
+            resultadoTexto.innerHTML = `❌ Error del servidor de Google: ${data.error.message}`;
+        } else {
+            resultadoTexto.innerHTML = "❌ Los servidores no devolvieron un formato compatible.";
         }
+
+    } catch (error) {
+        console.error(error);
+        resultadoTexto.innerHTML = `❌ Error de conexión. Revisa que tu clave esté bien copiada y no tenga espacios de más.`;
+    } finally {
+        btn.innerText = "✨ Sugerir Recetas con lo que Hay";
+        btn.disabled = false;
+    }
+}
+
     </script>
 </body>
 </html>
