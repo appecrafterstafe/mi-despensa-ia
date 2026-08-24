@@ -11,7 +11,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col pb-20 select-none">
 
-    <!-- BARRA SUPERIOR -->
+    <!-- BARRA SUPERIOR (TOP APP BAR) -->
     <header class="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-4 flex justify-between items-center shadow-xs">
         <div>
             <h1 class="text-xl font-bold text-slate-950 tracking-tight">🏡 Almacén Familiar</h1>
@@ -45,7 +45,7 @@
         <div id="vista-chef" class="hidden space-y-4">
             <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
                 <h2 class="text-lg font-bold flex items-center gap-2 text-indigo-300">🤖 Chef Inteligente</h2>
-                <p class="text-slate-300 text-xs mt-1 leading-relaxed">El backend seguro de Vercel leerá tu stock actual para sugerirte platos instantáneos.</p>
+                <p class="text-slate-300 text-xs mt-1 leading-relaxed">El backend seguro de Vercel leerá tu stock guardado para sugerirte platos instantáneos.</p>
                 <button id="btn-ia" onclick="generarRecetasConIA()" class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition transform active:scale-95 text-center text-sm cursor-pointer block border-none">
                     ✨ Sugerir Recetas con lo que Hay
                 </button>
@@ -101,12 +101,14 @@
             </div>
         </div>
     </div>
-    <!-- LÓGICA DE LA APLICACIÓN -->
+    <!-- LÓGICA DE LA APLICACIÓN CON PERSISTENCIA LOCAL -->
     <script>
         let filtroActual = "heladera"; 
         let vistaActual = "inventario"; 
+        let inventario = [];
 
-        let inventario = [
+        // Lista de alimentos inicial por defecto (solo si la memoria está vacía)
+        const stockPredeterminado = [
             { nombre: "🥚 Huevos", cantidad: 6, ubicacion: "heladera" },
             { nombre: "🥛 Leche", cantidad: 1, ubicacion: "heladera" },
             { nombre: "🧅 Cebolla", cantidad: 3, ubicacion: "heladera" },
@@ -114,6 +116,22 @@
             { nombre: "🍝 Fideos", cantidad: 2, ubicacion: "alacena" },
             { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa" }
         ];
+
+        // Cargar los datos guardados en el teléfono inmediatamente al abrir la app
+        function cargarInventarioDeMemoria() {
+            const datosGuardados = localStorage.getItem("almacen_familiar_stock");
+            if (datosGuardados) {
+                inventario = JSON.parse(datosGuardados);
+            } else {
+                inventario = stockPredeterminado;
+                guardarInventarioEnMemoria();
+            }
+        }
+
+        // Guardar el estado actual en el almacenamiento del celular
+        function guardarInventarioEnMemoria() {
+            localStorage.setItem("almacen_familiar_stock", JSON.stringify(inventario));
+        }
 
         function navegarA(pantalla) {
             vistaActual = pantalla;
@@ -177,7 +195,11 @@
 
         function cambiarCantidad(index, cambio) {
             inventario[index].cantidad += cambio;
-            if (inventario[index].cantidad < 0) inventario[index].cantidad = 0;
+            if (inventario[index].cantidad < 0) {
+                // Si la cantidad llega a 0, lo dejamos en 0 pero no lo borramos de la lista por si vuelven a comprar
+                inventario[index].cantidad = 0;
+            }
+            guardarInventarioEnMemoria(); // Guardado automático
             renderizarInventario();
         }
 
@@ -188,8 +210,12 @@
             const nombreInput = document.getElementById('nuevo-nombre');
             const ubicacionSelect = document.getElementById('nueva-ubicacion');
             if (!nombreInput.value.trim()) return;
+            
             inventario.push({ nombre: nombreInput.value.trim(), cantidad: 1, ubicacion: ubicacionSelect.value });
+            
+            guardarInventarioEnMemoria(); // Guardado automático
             cambiarFiltroUbicacion(ubicacionSelect.value);
+            
             nombreInput.value = '';
             cerrarModalAgregar();
         }
@@ -204,6 +230,7 @@
             contenedor.classList.remove('hidden');
             resultadoTexto.innerHTML = `<span class="text-indigo-600 font-semibold animate-pulse text-xs">El chef privado de Vercel está procesando tus ingredientes...</span>`;
 
+            // Filtrar solo los ingredientes que guardaste con cantidad mayor a 0
             const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
             const listaTexto = disponibles.join(", ");
 
@@ -229,6 +256,8 @@
             }
         }
 
+        // Ejecución inicial al abrir la app
+        cargarInventarioDeMemoria();
         renderizarInventario();
     </script>
 </body>
