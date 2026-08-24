@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Despensa Inteligente 🍳</title>
-    <!-- Tailwind CSS v4 para diseño rápido y moderno -->
+    <!-- Cargamos Tailwind CSS de forma estándar y ultra-compatible -->
     <script src="https://jsdelivr.net"></script>
 </head>
 <body class="bg-slate-100 min-h-screen font-sans p-4 md:p-8">
@@ -66,7 +66,7 @@
             <h2 class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">🤖 Generador de Recetas Inteligente</h2>
             <p class="text-slate-500 text-sm mb-5">La IA analizará los ingredientes activos listados arriba para armarte un menú sugerido al instante.</p>
             
-            <button id="btn-ia" onclick="generarRecetasConIA()" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-4 px-4 rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer text-center">
+            <button id="btn-ia" onclick="generarRecetasConIA()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-4 rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer text-center block">
                 ✨ Sugerir Recetas con lo que Hay
             </button>
 
@@ -81,7 +81,7 @@
 
     </div>
 
-    <!-- LÓGICA EN JAVASCRIPT -->
+    <!-- LÓGICA EN JAVASCRIPT CORREGIDA -->
     <script>
         const ingredientesDisponibles = ["Huevos", "Leche", "Cebolla", "Arroz", "Fideos", "Tomate en lata"];
 
@@ -90,8 +90,8 @@
             const contenedor = document.getElementById('contenedor-recetas');
             const resultadoTexto = document.getElementById('resultado-texto');
 
-            // Clave cargada
-            const GEMINI_API_KEY = "AQ.Ab8RN6JwCyj8ZIJEcfR7BCNHAcNpdOd4qzg";
+            // ⚠️ ASEGURATE DE QUE ESTA CLAVE SEA EXACTAMENTE LA MISMA DE TU ARCHIVO .ENV ANTERIOR
+            const GEMINI_API_KEY = "AIzaSy" + "D..." // Coloca tu clave real completa aquí dentro
 
             btn.innerText = "🤖 El chef está pensando...";
             btn.disabled = true;
@@ -99,8 +99,9 @@
             resultadoTexto.innerHTML = `<span class="text-orange-500 font-medium animate-pulse">Conectando con la cocina de Gemini...</span>`;
 
             const listaTexto = ingredientesDisponibles.join(", ");
-            const promptBase = `Eres un chef experto en cocina de aprovechamiento del hogar. Sugiere 2 recetas sencillas y rápidas basadas ESTRICTAMENTE en estos ingredientes disponibles: ${listaTexto}. Puedes asumir que el usuario tiene sal, pimienta, agua y aceite. Sé breve y directo en los pasos. Usa guiones para las listas y títulos limpios.`;
+            const promptBase = "Sugiere 2 recetas simples con estos ingredientes: " + listaTexto + ". Sé breve.";
 
+            // Endpoint unificado v1 para peticiones web directas
             const url = `https://googleapis.com{GEMINI_API_KEY}`;
 
             try {
@@ -116,18 +117,15 @@
 
                 if (data.candidates && data.candidates[0].content.parts[0].text) {
                     let textoFormateado = data.candidates[0].content.parts[0].text;
-                    
-                    // Formateo visual bonito para la web
                     textoFormateado = textoFormateado.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800 font-bold">$1</strong>');
-                    
                     resultadoTexto.innerHTML = textoFormateado;
                 } else {
-                    resultadoTexto.innerHTML = "❌ No se pudo obtener la receta. Verifica los parámetros de tu API Key.";
+                    resultadoTexto.innerHTML = "❌ Error en los datos recibidos de la IA.";
                 }
 
             } catch (error) {
                 console.error(error);
-                resultadoTexto.innerHTML = `❌ Error al conectar con Gemini.`;
+                resultadoTexto.innerHTML = `❌ Error de conexión. Revisa si tu API Key está completa.`;
             } finally {
                 btn.innerText = "✨ Sugerir Recetas con lo que Hay";
                 btn.disabled = false;
