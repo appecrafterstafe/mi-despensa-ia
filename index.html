@@ -13,8 +13,11 @@
         header { background: linear-gradient(135deg, #0f172a, #1e1b4b); padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 2px solid rgba(99, 102, 241, 0.2); color: white; }
         header h1 { font-size: 22px; font-weight: 900; tracking: -0.05em; }
         header p { font-size: 11px; color: #a5b4fc; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
-        .badge-online { font-size: 11px; background: rgba(52, 211, 153, 0.2); color: #34d399; font-weight: 700; padding: 6px 12px; border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 20px; display: flex; align-items: center; gap: 6px; }
-        .badge-dot { width: 8px; height: 8px; background-color: #34d399; border-radius: 50%; display: inline-block; }
+        
+        /* BOTÓN API KEY EN LA APP BAR */
+        .btn-api-status { font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 20px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
+        .api-ready { background: rgba(52, 211, 153, 0.2); color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
+        .api-missing { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
 
         /* CONTENEDOR MÓVIL PRINCIPAL */
         main { flex: 1; width: 100%; max-width: 500px; margin: 0 auto; padding: 16px; }
@@ -38,7 +41,7 @@
         .btn-counter { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #cbd5e1; background-color: #f8fafc; color: #1e293b; font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.1s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .btn-counter:active { transform: scale(0.85); background-color: #e2e8f0; }
         
-        .count-badge { font-size: 14px; font-weight: 900; padding: 6px 16px; border-radius: 20px; min-width: 48px; text-align: center; border: 1px solid transparent; shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .count-badge { font-size: 14px; font-weight: 900; padding: 6px 16px; border-radius: 20px; min-width: 48px; text-align: center; border: 1px solid transparent; }
         .count-heladera { background-color: #eff6ff; color: #1d4ed8; border-color: #dbeafe; }
         .count-alacena { background-color: #fffbeb; color: #b45309; border-color: #fef3c7; }
         .count-despensa { background-color: #ecfdf5; color: #047857; border-color: #d1fae5; }
@@ -90,9 +93,9 @@
             <h1>🏡 Almacén</h1>
             <p id="subtitulo-seccion">Stock • Heladera</p>
         </div>
-        <div class="badge-online">
-            <span class="badge-dot"></span>Online
-        </div>
+        <button onclick="configurarApiKey()" id="estado-api" class="btn-api-status api-missing">
+            🔑 Clave IA
+        </button>
     </header>
 
     <!-- CONTENEDOR MÓVIL -->
@@ -106,11 +109,12 @@
             </div>
             <ul id="lista-productos-movil" class="items-list"></ul>
         </div>
+
         <!-- PANTALLA 2: CHEF IA -->
         <div id="vista-chef" class="hidden">
             <div class="chef-card">
                 <h2>🤖 Chef Inteligente IA</h2>
-                <p>El backend seguro de Vercel analizará tu stock en tiempo real para armarte recetas de inmediato.</p>
+                <p>La IA analizará tu stock guardado de forma directa en tu dispositivo para sugerirte platos instantáneos.</p>
                 <button id="btn-ia" onclick="generarRecetasConIA()" class="btn-ia">✨ Sugerir Menú de Cocina</button>
             </div>
             <div id="contenedor-recetas" class="output-box hidden">
@@ -123,7 +127,7 @@
     <!-- BOTÓN FLOTANTE ANDROID (FAB) -->
     <button onclick="abrirModalAgregar()" id="fab-android" class="fab-android">+</button>
 
-    <!-- MENÚ DE NAVEGACIÓN INFERIOR (BOTTOM NAV) -->
+    <!-- NAV BAR INFERIOR -->
     <nav>
         <button onclick="navegarA('inventario')" id="nav-inventario" class="nav-btn active">
             <span class="icon">📦</span>
@@ -135,7 +139,7 @@
         </button>
     </nav>
 
-    <!-- FORMULARIO EMERGENTE (BOTTOM SHEET) -->
+    <!-- MODAL BOTTOM SHEET -->
     <div id="modal-agregar" class="modal-overlay hidden">
         <div class="modal-sheet">
             <div class="modal-header">
@@ -158,7 +162,7 @@
         </div>
     </div>
 
-    <!-- LOGICA DE CONTROL ANDROID INTERACTIVO -->
+    <!-- LOGICA DE CONTROL TOTAL SIN SERVIDORES EXTERNOS -->
     <script>
         let filtroActual = "heladera"; 
         let vistaActual = "inventario"; 
@@ -172,6 +176,31 @@
             { nombre: "🍝 Fideos", cantidad: 2, ubicacion: "alacena" },
             { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa" }
         ];
+
+        function actualizarBotonApi() {
+            const apiSaved = localStorage.getItem("GEMINI_API_KEY");
+            const btn = document.getElementById("estado-api");
+            if(apiSaved) {
+                btn.className = "btn-api-status api-ready";
+                btn.innerText = "✅ Clave OK";
+            } else {
+                btn.className = "btn-api-status api-missing";
+                btn.innerText = "⚠️ Cargar Clave";
+            }
+        }
+
+        function configurarApiKey() {
+            const actualKey = localStorage.getItem("GEMINI_API_KEY") || "";
+            const nuevaKey = prompt("Pegá tu API Key de Gemini aquí (Se guardará únicamente en este navegador de forma privada):", actualKey);
+            if (nuevaKey !== null) {
+                if(nuevaKey.trim() === "") {
+                    localStorage.removeItem("GEMINI_API_KEY");
+                } else {
+                    localStorage.setItem("GEMINI_API_KEY", nuevaKey.trim());
+                }
+                actualizarBotonApi();
+            }
+        }
 
         function cargarInventoryDeMemoria() {
             const datosGuardados = localStorage.getItem("almacen_familiar_stock");
@@ -258,84 +287,96 @@
         function abrirModalAgregar() { document.getElementById('modal-agregar').classList.remove('hidden'); }
         function cerrarModalAgregar() { document.getElementById('modal-agregar').classList.add('hidden'); }
 
-  function agregarAlimento() {
-    const nombreInput = document.getElementById('nuevo-nombre');
-    const ubicacionSelect = document.getElementById('nueva-ubicacion');
-    
-    const nombreLimpio = nombreInput.value.trim();
-    if (!nombreLimpio) return;
-    
-    // Convertimos a minúsculas para comparar de forma inteligente
-    const nombreBusqueda = nombreLimpio.toLowerCase();
-    
-    // 🔍 Buscamos si el alimento ya existe en esa misma ubicación
-    const productoExistente = inventario.find(item => 
-        item.nombre.toLowerCase() === nombreBusqueda && 
-        item.ubicacion === ubicacionSelect.value
-    );
-    
-    if (productoExistente) {
-        // Si ya existía en esa zona, le sumamos 1 a la cantidad existente
-        productoExistente.cantidad += 1;
-    } else {
-        // Si es un alimento completamente nuevo, lo agregamos con cantidad 1
-        inventario.push({ 
-            nombre: nombreLimpio, 
-            cantidad: 1, 
-            ubicacion: ubicacionSelect.value 
-        });
-    }
-    
-    // Guardamos los cambios permanentemente en la memoria del celular
-    guardarInventarioEnMemoria();
-    
-    // Cambiamos automáticamente a la pestaña correspondiente para ver el cambio
-    cambiarFiltroUbicacion(ubicacionSelect.value);
-    
-    // Limpiamos el cuadro de texto y cerramos la ventana emergente
-    nombreInput.value = '';
-    cerrarModalAgregar();
-}
-
+        function agregarAlimento() {
+            const nombreInput = document.getElementById('nuevo-nombre');
+            const ubicacionSelect = document.getElementById('nueva-ubicacion');
+            
+            const nombreLimpio = nombreInput.value.trim();
+            if (!nombreLimpio) return;
+            
+            const nombreBusqueda = nombreLimpio.toLowerCase();
+            const productoExistente = inventario.find(item => 
+                item.nombre.toLowerCase() === nombreBusqueda && 
+                item.ubicacion === ubicacionSelect.value
+            );
+            
+            if (productoExistente) {
+                productoExistente.cantidad += 1;
+            } else {
+                inventario.push({ nombre: nombreLimpio, cantidad: 1, ubicacion: ubicacionSelect.value });
+            }
+            
+            guardarInventarioEnMemoria();
+            cambiarFiltroUbicacion(ubicacionSelect.value);
+            
+            nombreInput.value = '';
+            cerrarModalAgregar();
+        }
 
         async function generarRecetasConIA() {
             const btn = document.getElementById('btn-ia');
             const contenedor = document.getElementById('contenedor-recetas');
             const resultadoTexto = document.getElementById('resultado-texto');
 
+            const GEMINI_API_KEY = localStorage.getItem("GEMINI_API_KEY");
+            if (!GEMINI_API_KEY) {
+                alert("Por favor, configura tu API Key primero tocando el botón de arriba.");
+                configurarApiKey();
+                return;
+            }
+
             btn.innerText = "🤖 Cocinando ideas...";
             btn.disabled = true;
             contenedor.classList.remove('hidden');
-            resultadoTexto.innerHTML = `<span class="pulse-text">Creando menú con tus ingredientes...</span>`;
+            resultadoTexto.innerHTML = `<span class="pulse-text">Consultando de forma directa con Google Gemini...</span>`;
 
+            // Filtramos solo los ingredientes reales que guardaste con cantidad mayor a 0
             const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
+            
+            if (disponibles.length === 0) {
+                resultadoTexto.innerHTML = "❌ No hay ingredientes activos en el stock para cocinar.";
+                btn.innerText = "✨ Sugerir Menú de Cocina";
+                btn.disabled = false;
+                return;
+            }
+
             const listaTexto = disponibles.join(", ");
+            const promptBase = `Eres un chef experto. Sugiere 2 recetas simples y rápidas usando exclusivamente algunos de estos ingredientes: ${listaTexto}. Asume sal, aceite y agua. No uses markdown de títulos pesados, solo guiones claros.`;
+
+            // Conexión universal directa desde el dispositivo
+            const url = `https://googleapis.com{GEMINI_API_KEY}`;
 
             try {
-                const response = await fetch('https://mi-despensa-ia-80qqkwhud-appe-crafter.vercel.app/', {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ingredientes: listaTexto })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptBase }] }] })
                 });
+                
                 const data = await response.json();
-                if (data.receta) {
-                    let texto = data.receta;
+                
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    let texto = data.candidates[0].content.parts[0].text;
+                    // Reemplazo estético simple para negritas
                     texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                     resultadoTexto.innerHTML = texto;
+                } else if (data.error) {
+                    resultadoTexto.innerHTML = `❌ Error de Google: ${data.error.message}`;
                 } else {
-                    resultadoTexto.innerHTML = `❌ Error en el servidor backend: ${data.error || 'Intenta de nuevo.'}`;
+                    resultadoTexto.innerHTML = "❌ Formato incompatible recibido de la IA.";
                 }
             } catch (error) {
-                resultadoTexto.innerHTML = "❌ Error de comunicación con el backend.";
+                resultadoTexto.innerHTML = "❌ Error al conectar directamente con la IA.";
             } finally {
                 btn.innerText = "✨ Sugerir Menú de Cocina";
                 btn.disabled = false;
             }
         }
 
+        // Ejecución inicial obligatoria para Android
         cargarInventoryDeMemoria();
         renderizarInventario();
+        actualizarBotonApi();
     </script>
 </body>
 </html>
-
