@@ -379,4 +379,95 @@
         actualizarBotonApi();
     </script>
 </body>
+function eliminarAlimentoTotal(index) {
+            const confirmar = confirm(`¿Estás seguro de que querés quitar "${inventario[index].nombre}" del almacén?`);
+            if (!confirmar) return;
+            inventario.splice(index, 1);
+            guardarInventarioEnMemoria();
+            renderizarInventario();
+        }
+
+        function agregarAlimento() {
+            const nombreInput = document.getElementById('nuevo-nombre');
+            const ubicacionSelect = document.getElementById('nueva-ubicacion');
+            
+            const nombreLimpio = nombreInput.value.trim();
+            if (!nombreLimpio) return;
+            
+            const nombreBusqueda = nombreLimpio.toLowerCase();
+            const productoExistente = inventario.find(item => 
+                item.nombre.toLowerCase() === nombreBusqueda && 
+                item.ubicacion === ubicacionSelect.value
+            );
+            
+            if (productoExistente) {
+                productoExistente.cantidad += cantidadModalActual;
+            } else {
+                inventario.push({ nombre: nombreLimpio, cantidad: cantidadModalActual, ubicacion: ubicacionSelect.value });
+            }
+            
+            guardarInventarioEnMemoria();
+            cambiarFiltroUbicacion(ubicacionSelect.value);
+            
+            nombreInput.value = '';
+            cantidadModalActual = 1;
+            document.getElementById('modal-cantidad-valor').innerText = '1';
+            
+            cerrarModalAgregar();
+        }
+
+        async function generarRecetasConIA() {
+            const btn = document.getElementById('btn-ia');
+            const contenedor = document.getElementById('contenedor-recetas');
+            const resultadoTexto = document.getElementById('resultado-texto');
+
+            btn.innerText = "🤖 Cocinando ideas...";
+            btn.disabled = true;
+            contenedor.classList.remove('hidden');
+            resultadoTexto.innerHTML = `<span class="pulse-text">Consultando de forma directa con Google Gemini...</span>`;
+
+            const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
+            
+            if (disponibles.length === 0) {
+                resultadoTexto.innerHTML = "❌ No hay ingredientes en stock para cocinar.";
+                btn.innerText = "✨ Sugerir Menú de Cocina";
+                btn.disabled = false;
+                return;
+            }
+
+            const listaTexto = disponibles.join(", ");
+
+            try {
+                const response = await fetch('/api/receta', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ingredientes: listaTexto })
+                });
+                
+                const data = await response.json();
+                
+                if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+                    let texto = data.candidates[0].content.parts[0].text;
+                    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    resultadoTexto.innerHTML = texto;
+                } else if (data.error) {
+                    resultadoTexto.innerHTML = `❌ Error: ${data.error}`;
+                } else {
+                    resultadoTexto.innerHTML = "❌ Formato incompatible recibido de la IA.";
+                }
+            } catch (error) {
+                console.error(error);
+                resultadoTexto.innerHTML = "❌ Error al conectar con el servidor.";
+            } finally {
+                btn.innerText = "✨ Sugerir Menú de Cocina";
+                btn.disabled = false;
+            }
+        }
+
+        cargarInventoryDeMemoria();
+        renderizarInventario();
+    </script>
+</body>
+</html>
+
 </html>
