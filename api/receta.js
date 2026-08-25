@@ -1,48 +1,46 @@
+// api/receta.js
+// Esta función corre en el servidor de Vercel, nunca en el navegador.
+// La API key vive acá, leída de una variable de entorno — jamás en el HTML/JS del cliente.
+
 export default async function handler(req, res) {
-    // Permitir acceso desde cualquier pantalla o visor web (CORS)
-    res.setHeader('Access-Control-Allow-Origin', '*'); 
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Content-Type');
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Método no permitido' });
+  }
 
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
+  const { ingredientes } = req.body || {};
+  if (!ingredientes || typeof ingredientes !== 'string') {
+    return res.status(400).json({ error: 'Faltan ingredientes' });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'GEMINI_API_KEY no configurada en el servidor' });
+  }
+
+  const promptBase = `Eres un chef experto. Sugiere 2 recetas simples y rápidas usando exclusivamente algunos de estos ingredientes: ${ingredientes}. Asume sal, aceite y agua. No uses markdown pesado, solo guiones claros y listas limpias.`;
+
+  try {
+    const respuestaGemini = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
+        body: JSON.stringify({ contents: [{ parts: [{ text: promptBase }] }] }),
+      }
+    );
+
+    const data = await respuestaGemini.json();
+
+    if (!respuestaGemini.ok) {
+      return res.status(respuestaGemini.status).json({ error: data?.error?.message || 'Error de Google' });
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Método no permitido' });
-    }
-
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-    if (!GEMINI_API_KEY) {
-        return res.status(500).json({ error: 'Falta configurar la API Key en el panel de Vercel.' });
-    }
-
-    try {
-        const { ingredientes } = req.body;
-        const promptBase = `Eres un chef experto de hogar. Sugiere 2 recetas cortas y fáciles usando exclusivamente algunos de estos ingredientes: ${ingredientes}. Asume sal, aceite y agua. Sé breve y estructurado.`;
-
-        // URL del modelo estable para peticiones POST de servidor
-        const url = `https://googleapis.com{GEMINI_API_KEY}`;
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: promptBase }] }]
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
-            return res.status(200).json({ receta: data.candidates[0].content.parts[0].text });
-        } else {
-            return res.status(500).json({ error: 'Respuesta inesperada de Google', detalles: data });
-        }
-
-    } catch (error) {
-        return res.status(500).json({ error: 'Error en la conexión del servidor', detalle: error.message });
-    }
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al conectar con la IA' });
+  }
 }
