@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Almacén Familiar</title>
+    <!-- LIBRERÍA OFICIAL DE SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* CONFIGURACIÓN BASE ESTILO ANDROID NATIVO */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -11,7 +13,7 @@
         header { background: linear-gradient(135deg, #0f172a, #1e1b4b); padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 2px solid rgba(99, 102, 241, 0.2); color: white; }
         header h1 { font-size: 22px; font-weight: 900; tracking: -0.05em; }
         header p { font-size: 11px; color: #a5b4fc; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
-        .badge-online { font-size: 11px; background: rgba(52, 211, 153, 0.2); color: #34d399; font-weight: 700; padding: 6px 12px; border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 20px; display: flex; align-items: center; gap: 6px; }
+        .badge-online { font-size: 11px; background: rgba(52, 211, 153, 0.2); color: #34d399; font-weight: 700; padding: 6px 12px; border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 20px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
         .badge-dot { width: 8px; height: 8px; background-color: #34d399; border-radius: 50%; display: inline-block; }
         main { flex: 1; width: 100%; max-width: 500px; margin: 0 auto; padding: 16px; }
         .hidden { display: none !important; }
@@ -79,7 +81,7 @@
             <h1>🏡 Almacén</h1>
             <p id="subtitulo-seccion">Stock • Heladera</p>
         </div>
-        <div class="badge-online"><span class="badge-dot"></span>Online</div>
+        <button id="badge-sesion" class="badge-online">Iniciar sesión con Google</button>
     </header>
 
     <main>
@@ -158,6 +160,16 @@
     </div>
     <!-- LOGICA DE CONTROL TOTAL DESDE EL NAVEGADOR -->
     <script>
+// Conexión con tu base de datos
+const SUPABASE_URL = "https://ienlcmxasdlhmrkrqkci.supabase.co";
+const SUPABASE_KEY = "sb_publishable_IbpLwe16Y6XA85CkPX53Cg_Re9rbRBz";
+
+// OJO: la librería del CDN expone su propio objeto global "supabase".
+// Por eso llamamos a nuestro cliente "supabaseClient" y no "supabase" — 
+// si usáramos el mismo nombre, se pisan entre sí y el login deja de funcionar.
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let usuarioActual = null;
+
         let filtroActual = "heladera"; 
         let vistaActual = "inventario"; 
         let inventario = [];
@@ -439,6 +451,53 @@ function cambiarCantidad(index, cambio) {
 
         cargarInventoryDeMemoria();
         renderizarInventario();
+// Iniciar sesión con un clic usando Google
+async function ingresarConGoogle() {
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+  if (error) console.error("Error:", error.message);
+}
+
+// Cerrar sesión
+async function cerrarSesion() {
+  await supabaseClient.auth.signOut();
+  usuarioActual = null;
+  actualizarUISesion();
+}
+
+// Verificar si hay alguien conectado al abrir la app
+async function verificarSesion() {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  usuarioActual = user || null;
+  actualizarUISesion();
+}
+
+// Refleja el estado de sesión en el badge del header
+function actualizarUISesion() {
+  const badge = document.getElementById('badge-sesion');
+  if (usuarioActual) {
+    badge.innerHTML = `<span class="badge-dot"></span>${usuarioActual.email}`;
+    badge.onclick = cerrarSesion;
+    badge.title = "Tocá para cerrar sesión";
+  } else {
+    badge.innerHTML = `Iniciar sesión con Google`;
+    badge.onclick = ingresarConGoogle;
+    badge.title = "";
+  }
+}
+
+// Ejecutar automáticamente al cargar la página
+document.addEventListener("DOMContentLoaded", verificarSesion);
+
+// Reacciona también si el login se completa después de volver de Google
+supabaseClient.auth.onAuthStateChange((_event, session) => {
+  usuarioActual = session ? session.user : null;
+  actualizarUISesion();
+});
     </script>
 </body>
 </html>
