@@ -6,101 +6,75 @@
     <title>Almacén Familiar</title>
     <style>
         /* CONFIGURACIÓN BASE ESTILO ANDROID NATIVO */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f8fafc; color: #1e293b; min-height: 100vh; flex-direction: column; display: flex; padding-bottom: 90px; overscroll-behavior-y: contain; -webkit-tap-highlight-color: transparent; user-select: none; }
-        
-        /* BARRA SUPERIOR (TOP BAR) */
         header { background: linear-gradient(135deg, #0f172a, #1e1b4b); padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 2px solid rgba(99, 102, 241, 0.2); color: white; }
         header h1 { font-size: 22px; font-weight: 900; tracking: -0.05em; }
         header p { font-size: 11px; color: #a5b4fc; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
-        
-        /* BOTÓN API KEY EN LA APP BAR */
-        .btn-api-status { font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 20px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; }
-        .api-ready { background: rgba(52, 211, 153, 0.2); color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
-        .api-missing { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
-
-        /* CONTENEDOR MÓVIL PRINCIPAL */
+        .badge-online { font-size: 11px; background: rgba(52, 211, 153, 0.2); color: #34d399; font-weight: 700; padding: 6px 12px; border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 20px; display: flex; align-items: center; gap: 6px; }
+        .badge-dot { width: 8px; height: 8px; background-color: #34d399; border-radius: 50%; display: inline-block; }
         main { flex: 1; width: 100%; max-width: 500px; margin: 0 auto; padding: 16px; }
         .hidden { display: none !important; }
-
-        /* PANTALLAS Y PASTILLAS (CHIPS) */
         .chips-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; }
         .chip { padding: 12px 22px; border-radius: 16px; font-size: 13px; font-weight: 800; border: 1px solid #e2e8f0; background-color: white; color: #475569; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        
         .chip.active-heladera { background-color: #2563eb; color: white; border-color: #3b82f6; transform: scale(1.02); box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2); }
         .chip.active-alacena { background-color: #d97706; color: white; border-color: #f59e0b; transform: scale(1.02); box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2); }
         .chip.active-despensa { background-color: #059669; color: white; border-color: #10b981; transform: scale(1.02); box-shadow: 0 4px 8px rgba(5, 150, 105, 0.2); }
-
-        /* TARJETAS DE ALIMENTOS */
         .items-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
         .product-card { background-color: white; padding: 16px; border-radius: 22px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); border-bottom: 3px solid #e2e8f0; }
         .product-name { font-size: 15px; font-weight: 700; color: #0f172a; }
-        
-        /* BOTONES DEL STOCK */
         .controls-wrapper { display: flex; align-items: center; gap: 14px; }
         .btn-counter { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #cbd5e1; background-color: #f8fafc; color: #1e293b; font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.1s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .btn-counter:active { transform: scale(0.85); background-color: #e2e8f0; }
-        
         .count-badge { font-size: 14px; font-weight: 900; padding: 6px 16px; border-radius: 20px; min-width: 48px; text-align: center; border: 1px solid transparent; }
         .count-heladera { background-color: #eff6ff; color: #1d4ed8; border-color: #dbeafe; }
         .count-alacena { background-color: #fffbeb; color: #b45309; border-color: #fef3c7; }
         .count-despensa { background-color: #ecfdf5; color: #047857; border-color: #d1fae5; }
         .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; font-size: 14px; font-weight: 700; background: white; border-radius: 24px; border: 2px dashed #cbd5e1; }
-
-        /* PANTALLA CHEF IA */
         .chef-card { background: linear-gradient(135deg, #1e1b4b, #0f172a); border-radius: 24px; padding: 24px; color: white; border: 1px solid #312e81; box-shadow: 0 10px 20px rgba(0,0,0,0.15); margin-bottom: 20px; }
         .chef-card h2 { font-size: 20px; font-weight: 800; color: #c7d2fe; }
         .chef-card p { font-size: 12px; color: #cbd5e1; margin-top: 8px; line-height: 1.6; }
         .btn-ia { width: 100%; margin-top: 18px; background: linear-gradient(90deg, #f97316, #f59e0b); border: none; padding: 16px; border-radius: 16px; color: white; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); }
         .btn-ia:active { transform: scale(0.97); }
-        
         .output-box { background-color: white; border-radius: 24px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .output-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
         .output-content { font-size: 13px; color: #475569; line-height: 1.7; white-space: pre-line; font-weight: 500; }
-
-        /* BOTÓN FLOTANTE ANDROID (FAB) */
         .fab-android { position: fixed; bottom: 100px; right: 20px; width: 62px; height: 62px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; border: none; border-radius: 20px; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4); display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; transition: all 0.2s ease; z-index: 50; }
         .fab-android:active { transform: scale(0.9); }
-
-        /* MENÚ DE NAVEGACIÓN INFERIOR (BOTTOM NAV) */
         nav { position: fixed; bottom: 0; left: 0; right: 0; height: 76px; background-color: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05); padding: 0 16px; z-index: 40; }
         .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 56px; border-radius: 18px; border: none; background: transparent; color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; tracking: 0.05em; cursor: pointer; transition: all 0.2s ease; }
         .nav-btn .icon { font-size: 24px; margin-bottom: 3px; }
         .nav-btn.active { color: #4f46e5; background-color: #e0e7ff; }
-
-        /* FORMULARIO EMERGENTE (BOTTOM SHEET) */
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.55); backdrop-filter: blur(5px); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
         .modal-sheet { background-color: white; width: 100%; max-width: 500px; border-radius: 28px 28px 0 0; padding: 24px 24px 34px 24px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-b: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 18px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 18px; }
         .modal-header h3 { font-size: 19px; font-weight: 900; color: #0f172a; }
         .btn-close { width: 34px; height: 34px; border-radius: 50%; background-color: #f1f5f9; border: none; font-weight: 800; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        
         .form-group { margin-bottom: 16px; }
         .form-group label { font-size: 11px; font-weight: 900; color: #94a3b8; text-transform: uppercase; tracking: 0.05em; display: block; margin-bottom: 6px; }
         .form-control { width: 100%; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; }
         .form-control:focus { border-color: #4f46e5; background-color: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .modal-counter-wrapper { display: flex; align-items: center; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 4px; justify-content: space-between; }
+        .modal-counter-btn { width: 44px; height: 44px; border-radius: 10px; border: none; background-color: white; color: #1e293b; font-size: 20px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .modal-counter-btn:active { background-color: #e2e8f0; transform: scale(0.95); }
+        .modal-counter-value { font-size: 16px; font-weight: 900; color: #0f172a; text-align: center; flex: 1; }
         .btn-submit { width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none; padding: 16px; border-radius: 14px; color: white; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
-        
         .pulse-text { color: #f97316; font-weight: 700; animation: pulse 1.5s infinite; font-size: 13px; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .btn-delete { width: 38px; height: 38px; border-radius: 12px; border: 1px solid #fee2e2; background-color: #fef2f2; color: #ef4444; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease; margin-left: 4px; }
+        .btn-delete:active { transform: scale(0.85); background-color: #fca5a5; }
     </style>
 </head>
 <body>
-
-    <!-- BARRA SUPERIOR -->
     <header>
         <div>
             <h1>🏡 Almacén</h1>
             <p id="subtitulo-seccion">Stock • Heladera</p>
         </div>
-        <button onclick="configurarApiKey()" id="estado-api" class="btn-api-status api-missing">
-            🔑 Clave IA
-        </button>
+        <div class="badge-online"><span class="badge-dot"></span>Online</div>
     </header>
 
-    <!-- CONTENEDOR MÓVIL -->
     <main>
-        <!-- PANTALLA 1: INVENTARIO -->
         <div id="vista-inventario">
             <div class="chips-container">
                 <button onclick="cambiarFiltroUbicacion('heladera')" id="chip-heladera" class="chip active-heladera">❄️ Heladera</button>
@@ -110,7 +84,6 @@
             <ul id="lista-productos-movil" class="items-list"></ul>
         </div>
 
-        <!-- PANTALLA 2: CHEF IA -->
         <div id="vista-chef" class="hidden">
             <div class="chef-card">
                 <h2>🤖 Chef Inteligente IA</h2>
@@ -124,23 +97,14 @@
         </div>
     </main>
 
-    <!-- BOTÓN FLOTANTE ANDROID (FAB) -->
     <button onclick="abrirModalAgregar()" id="fab-android" class="fab-android">+</button>
 
-    <!-- NAV BAR INFERIOR -->
     <nav>
-        <button onclick="navegarA('inventario')" id="nav-inventario" class="nav-btn active">
-            <span class="icon">📦</span>
-            <span>Mi Stock</span>
-        </button>
-        <button onclick="navegarA('chef')" id="nav-chef" class="nav-btn">
-            <span class="icon">🍳</span>
-            <span>Chef IA</span>
-        </button>
+        <button onclick="navegarA('inventario')" id="nav-inventario" class="nav-btn active"><span class="icon">📦</span><span>Mi Stock</span></button>
+        <button onclick="navegarA('chef')" id="nav-chef" class="nav-btn"><span class="icon">🍳</span><span>Chef IA</span></button>
     </nav>
 
-    <!-- MODAL BOTTOM SHEET -->
-    <div id="modal-agregar" class="modal-overlay hidden">
+    <div id="modal-agregar" class="modal-overlay hidden" onclick="cerrarModalPorClicAfuera(event)">
         <div class="modal-sheet">
             <div class="modal-header">
                 <h3>Añadir al Almacén</h3>
@@ -149,6 +113,14 @@
             <div class="form-group">
                 <label>Nombre del Alimento</label>
                 <input id="nuevo-nombre" type="text" placeholder="Ej. Leche entera, Huevos..." class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Cantidad Inicial</label>
+                <div class="modal-counter-wrapper">
+                    <button type="button" onclick="modificarCantidadModal(-1)" class="modal-counter-btn">-</button>
+                    <div id="modal-cantidad-valor" class="modal-counter-value">1</div>
+                    <button type="button" onclick="modificarCantidadModal(1)" class="modal-counter-btn">+</button>
+                </div>
             </div>
             <div class="form-group">
                 <label>Ubicación de Guardado</label>
@@ -161,12 +133,12 @@
             <button onclick="agregarAlimento()" class="btn-submit">Confirmar Guardado</button>
         </div>
     </div>
-
-    <!-- LOGICA DE CONTROL TOTAL SIN SERVIDORES EXTERNOS -->
+    <!-- LOGICA DE CONTROL TOTAL DESDE EL NAVEGADOR -->
     <script>
         let filtroActual = "heladera"; 
         let vistaActual = "inventario"; 
         let inventario = [];
+        let cantidadModalActual = 1;
 
         const stockPredeterminado = [
             { nombre: "🥚 Huevos", cantidad: 6, ubicacion: "heladera" },
@@ -177,37 +149,12 @@
             { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa" }
         ];
 
-        function actualizarBotonApi() {
-            const apiSaved = localStorage.getItem("GEMINI_API_KEY");
-            const btn = document.getElementById("estado-api");
-            if(apiSaved) {
-                btn.className = "btn-api-status api-ready";
-                btn.innerText = "✅ Clave OK";
-            } else {
-                btn.className = "btn-api-status api-missing";
-                btn.innerText = "⚠️ Cargar Clave";
-            }
-        }
-
-        function configurarApiKey() {
-            const actualKey = localStorage.getItem("GEMINI_API_KEY") || "";
-            const nuevaKey = prompt("Pegá tu API Key de Gemini aquí (Se guardará únicamente en este navegador de forma privada):", actualKey);
-            if (nuevaKey !== null) {
-                if(nuevaKey.trim() === "") {
-                    localStorage.removeItem("GEMINI_API_KEY");
-                } else {
-                    localStorage.setItem("GEMINI_API_KEY", nuevaKey.trim());
-                }
-                actualizarBotonApi();
-            }
-        }
-
         function cargarInventoryDeMemoria() {
             const datosGuardados = localStorage.getItem("almacen_familiar_stock");
             if (datosGuardados) {
                 inventario = JSON.parse(datosGuardados);
             } else {
-                inventario = stockPredeterminado;
+                inventario = [...stockPredeterminado];
                 guardarInventarioEnMemoria();
             }
         }
@@ -227,7 +174,7 @@
                 document.getElementById('fab-android').classList.remove('hidden');
                 btnInv.className = "nav-btn active";
                 btnChef.className = "nav-btn";
-                document.getElementById('subtitulo-seccion').innerText = `Stock • ${filtroActual.charAt(0).toUpperCase() + filtroActual.slice(1)}`;
+                document.getElementById('subtitulo-seccion').innerText = `Stock • ${filtroActual.toUpperCase()}`;
             } else {
                 document.getElementById('vista-inventario').classList.add('hidden');
                 document.getElementById('vista-chef').classList.remove('hidden');
@@ -242,50 +189,101 @@
             filtroActual = ubicacion;
             ['heladera', 'alacena', 'despensa'].forEach(u => {
                 const btn = document.getElementById(`chip-${u}`);
-                if(u === ubicacion) {
-                    btn.className = `chip active-${u}`;
-                } else {
-                    btn.className = "chip";
-                }
+                btn.className = u === ubicacion ? `chip active-${u}` : "chip";
             });
-            document.getElementById('subtitulo-seccion').innerText = `Stock • ${ubicacion.charAt(0).toUpperCase() + ubicacion.slice(1)}`;
+            document.getElementById('subtitulo-seccion').innerText = `Stock • ${ubicacion.toUpperCase()}`;
             renderizarInventario();
         }
 
-        function renderizarInventario() {
-            const listaUl = document.getElementById('lista-productos-movil');
-            listaUl.innerHTML = '';
-            const filtrados = inventario.map((item, index) => ({...item, originalIndex: index})).filter(item => item.ubicacion === filtroActual);
+                        function renderizarInventario() {
+    const listaUl = document.getElementById('lista-productos-movil');
+    listaUl.innerHTML = '';
+    
+    // CORREGIDO: Mapeamos primero sobre el inventario completo para guardar el índice global real
+    const filtrados = inventario
+        .map((item, index) => ({ ...item, realIndex: index }))
+        .filter(item => item.ubicacion === filtroActual);
 
-            if(filtrados.length === 0) {
-                listaUl.innerHTML = `<div class="empty-state">No tienes alimentos registrados aquí.</div>`;
-                return;
-            }
+    if (filtrados.length === 0) {
+        listaUl.innerHTML = `<div class="empty-state">No tienes alimentos registrados aquí.</div>`;
+        return;
+    }
 
-            filtrados.forEach((item) => {
-                const li = document.createElement('li');
-                li.className = "product-card";
-                li.innerHTML = `
-                    <span class="product-name">${item.nombre}</span>
-                    <div class="controls-wrapper">
-                        <button onclick="cambiarCantidad(${item.originalIndex}, -1)" class="btn-counter">-</button>
-                        <span class="count-badge count-${filtroActual}">${item.cantidad}</span>
-                        <button onclick="cambiarCantidad(${item.originalIndex}, 1)" class="btn-counter">+</button>
-                    </div>
-                `;
-                listaUl.appendChild(li);
-            });
+    filtrados.forEach((item) => {
+        const li = document.createElement('li');
+        li.className = "product-card";
+        li.innerHTML = `
+            <span class="product-name">${item.nombre}</span>
+            <div class="controls-wrapper">
+                <!-- Ahora realIndex apunta exactamente a la posición global correcta -->
+                <button onclick="cambiarCantidad(${item.realIndex}, -1)" class="btn-counter">-</button>
+                <span id="badge-${item.realIndex}" class="count-badge count-${filtroActual}">${item.cantidad}</span>
+                <button onclick="cambiarCantidad(${item.realIndex}, 1)" class="btn-counter">+</button>
+                <button onclick="eliminarAlimentoTotal(${item.realIndex})" class="btn-delete" title="Eliminar del todo">🗑️</button>
+            </div>
+        `;
+        listaUl.appendChild(li);
+    });
+}
+
+// FUNCIÓN ÚNICA DE CONTROL DE STOCK PRINCIPAL (OPTIMIZADA)
+function cambiarCantidad(index, cambio) {
+    // 1. Validar que el elemento exista
+    if (!inventario[index]) return;
+    
+    // 2. Asegurar que la cantidad sea un número válido y realizar la operación
+    let actual = parseInt(inventario[index].cantidad);
+    if (isNaN(actual)) actual = 0;
+    
+    inventario[index].cantidad = Math.max(0, actual + cambio);
+    
+    // 3. Guardar en el almacenamiento local
+    guardarInventarioEnMemoria();
+    
+    // 4. ACTUALIZACIÓN INSTANTÁNEA: en vez de re-renderizar toda la lista
+    // (lo cual, con setTimeout, dependía de que el navegador liberara el hilo),
+    // tocamos directamente el número en pantalla. Es inmediato y no depende del re-render.
+    const badge = document.getElementById(`badge-${index}`);
+    if (badge) {
+        badge.textContent = inventario[index].cantidad;
+    } else {
+        // Si por algún motivo el badge no está en pantalla (raro), recurrimos al render completo
+        renderizarInventario();
+    }
+}
+
+
+        // LÓGICA MODAL INTERACTIVA
+        function abrirModalAgregar() { 
+            document.getElementById('nuevo-nombre').value = '';
+            cantidadModalActual = 1;
+            document.getElementById('modal-cantidad-valor').innerText = '1';
+            document.getElementById('modal-agregar').classList.remove('hidden'); 
+        }
+        
+        function cerrarModalAgregar() { 
+            document.getElementById('modal-agregar').classList.add('hidden'); 
         }
 
-        function cambiarCantidad(index, cambio) {
-            inventario[index].cantidad += cambio;
-            if (inventario[index].cantidad < 0) inventario[index].cantidad = 0;
+        function cerrarModalPorClicAfuera(event) {
+            if (event.target.id === 'modal-agregar') {
+                cerrarModalAgregar();
+            }
+        }
+
+        function modificarCantidadModal(cambio) {
+            cantidadModalActual += cambio;
+            if (cantidadModalActual < 1) cantidadModalActual = 1;
+            document.getElementById('modal-cantidad-valor').innerText = cantidadModalActual;
+        }
+
+        function eliminarAlimentoTotal(index) {
+            const confirmar = confirm(`¿Estás seguro de que querés quitar "${inventario[index].nombre}" del almacén?`);
+            if (!confirmar) return;
+            inventario.splice(index, 1);
             guardarInventarioEnMemoria();
             renderizarInventario();
         }
-
-        function abrirModalAgregar() { document.getElementById('modal-agregar').classList.remove('hidden'); }
-        function cerrarModalAgregar() { document.getElementById('modal-agregar').classList.add('hidden'); }
 
         function agregarAlimento() {
             const nombreInput = document.getElementById('nuevo-nombre');
@@ -295,91 +293,4 @@
             if (!nombreLimpio) return;
             
             const nombreBusqueda = nombreLimpio.toLowerCase();
-            const productoExistente = inventario.find(item => 
-                item.nombre.toLowerCase() === nombreBusqueda && 
-                item.ubicacion === ubicacionSelect.value
-            );
-            
-            if (productoExistente) {
-                productoExistente.cantidad += 1;
-            } else {
-                inventario.push({ nombre: nombreLimpio, cantidad: 1, ubicacion: ubicacionSelect.value });
-            }
-            
-            guardarInventarioEnMemoria();
-            cambiarFiltroUbicacion(ubicacionSelect.value);
-            
-            nombreInput.value = '';
-            cerrarModalAgregar();
-        }
-
-        async function generarRecetasConIA() {
-            const btn = document.getElementById('btn-ia');
-            const contenedor = document.getElementById('contenedor-recetas');
-            const resultadoTexto = document.getElementById('resultado-texto');
-
-            const GEMINI_API_KEY = localStorage.getItem("GEMINI_API_KEY");
-            if (!GEMINI_API_KEY) {
-                alert("Por favor, configura tu API Key primero tocando el botón de arriba.");
-                configurarApiKey();
-                return;
-            }
-
-            btn.innerText = "🤖 Cocinando ideas...";
-            btn.disabled = true;
-            contenedor.classList.remove('hidden');
-            resultadoTexto.innerHTML = `<span class="pulse-text">Consultando de forma directa con Google Gemini...</span>`;
-
-            // Filtramos solo los ingredientes reales que guardaste con cantidad mayor a 0
-            const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
-            
-            if (disponibles.length === 0) {
-                resultadoTexto.innerHTML = "❌ No hay ingredientes activos en el stock para cocinar.";
-                btn.innerText = "✨ Sugerir Menú de Cocina";
-                btn.disabled = false;
-                return;
-            }
-
-            const listaTexto = disponibles.join(", ");
-            const promptBase = `Eres un chef experto. Sugiere 2 recetas simples y rápidas usando exclusivamente algunos de estos ingredientes: ${listaTexto}. Asume sal, aceite y agua. No uses markdown de títulos pesados, solo guiones claros.`;
-
-            // Conexión universal directa desde el dispositivo
-            const url = `https://googleapis.com{GEMINI_API_KEY}`;
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: promptBase }] }] })
-                });
-                
-                const data = await response.json();
-                
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    let texto = data.candidates[0].content.parts[0].text;
-                    // Reemplazo estético simple para negritas
-                    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    resultadoTexto.innerHTML = texto;
-                } else if (data.error) {
-                    resultadoTexto.innerHTML = `❌ Error de Google: ${data.error.message}`;
-                } else {
-                    resultadoTexto.innerHTML = "❌ Formato incompatible recibido de la IA.";
-                }
-            } catch (error) {
-                resultadoTexto.innerHTML = "❌ Error al conectar directamente con la IA.";
-            } finally {
-                btn.innerText = "✨ Sugerir Menú de Cocina";
-                btn.disabled = false;
-            }
-        }
-
-        // Ejecución inicial obligatoria para Android
-        cargarInventoryDeMemoria();
-        renderizarInventario();
-        actualizarBotonApi();
-    </script>
-</body>
-
-    </script>
-</body>
-</html>
+            const productoExist
