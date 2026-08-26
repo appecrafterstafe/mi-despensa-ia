@@ -23,6 +23,13 @@
         .items-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
         .product-card { background-color: white; padding: 16px; border-radius: 22px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); border-bottom: 3px solid #e2e8f0; }
         .product-name { font-size: 15px; font-weight: 700; color: #0f172a; }
+        .product-info { display: flex; flex-direction: column; gap: 5px; }
+        .product-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .unidad-tag { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+        .venc-badge { font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 10px; border: 1px solid transparent; }
+        .venc-ok { background-color: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+        .venc-proximo { background-color: #fffbeb; color: #b45309; border-color: #fde68a; }
+        .venc-vencido { background-color: #fef2f2; color: #dc2626; border-color: #fecaca; }
         .controls-wrapper { display: flex; align-items: center; gap: 14px; }
         .btn-counter { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #cbd5e1; background-color: #f8fafc; color: #1e293b; font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.1s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .btn-counter:active { transform: scale(0.85); background-color: #e2e8f0; }
@@ -57,7 +64,8 @@
         .modal-counter-wrapper { display: flex; align-items: center; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 4px; justify-content: space-between; }
         .modal-counter-btn { width: 44px; height: 44px; border-radius: 10px; border: none; background-color: white; color: #1e293b; font-size: 20px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .modal-counter-btn:active { background-color: #e2e8f0; transform: scale(0.95); }
-        .modal-counter-value { font-size: 16px; font-weight: 900; color: #0f172a; text-align: center; flex: 1; }
+        .modal-counter-value { font-size: 16px; font-weight: 900; color: #0f172a; text-align: center; flex: 1; border: none; background: transparent; outline: none; -moz-appearance: textfield; }
+        .modal-counter-value::-webkit-outer-spin-button, .modal-counter-value::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .btn-submit { width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none; padding: 16px; border-radius: 14px; color: white; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
         .pulse-text { color: #f97316; font-weight: 700; animation: pulse 1.5s infinite; font-size: 13px; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -118,9 +126,24 @@
                 <label>Cantidad Inicial</label>
                 <div class="modal-counter-wrapper">
                     <button type="button" onclick="modificarCantidadModal(-1)" class="modal-counter-btn">-</button>
-                    <div id="modal-cantidad-valor" class="modal-counter-value">1</div>
+                    <input id="modal-cantidad-valor" class="modal-counter-value" type="number" min="1" value="1" inputmode="numeric" onfocus="this.select()" onchange="fijarCantidadModal(this.value)">
                     <button type="button" onclick="modificarCantidadModal(1)" class="modal-counter-btn">+</button>
                 </div>
+            </div>
+            <div class="form-group">
+                <label>Unidad de Medida</label>
+                <select id="nueva-unidad" class="form-control">
+                    <option value="Unidad">Unidad</option>
+                    <option value="Paquete">Paquete</option>
+                    <option value="Litro">Litro</option>
+                    <option value="Kilo">Kilo</option>
+                    <option value="Gramo">Gramo</option>
+                    <option value="Docena">Docena</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha de Vencimiento (opcional)</label>
+                <input id="nuevo-vencimiento" type="date" class="form-control">
             </div>
             <div class="form-group">
                 <label>Ubicación de Guardado</label>
@@ -141,12 +164,12 @@
         let cantidadModalActual = 1;
 
         const stockPredeterminado = [
-            { nombre: "🥚 Huevos", cantidad: 6, ubicacion: "heladera" },
-            { nombre: "🥛 Leche", cantidad: 1, ubicacion: "heladera" },
-            { nombre: "🧅 Cebolla", cantidad: 3, ubicacion: "heladera" },
-            { nombre: "🌾 Arroz", cantidad: 1, ubicacion: "alacena" },
-            { nombre: "🍝 Fideos", cantidad: 2, ubicacion: "alacena" },
-            { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa" }
+            { nombre: "🥚 Huevos", cantidad: 6, ubicacion: "heladera", unidad: "Unidad" },
+            { nombre: "🥛 Leche", cantidad: 1, ubicacion: "heladera", unidad: "Litro" },
+            { nombre: "🧅 Cebolla", cantidad: 3, ubicacion: "heladera", unidad: "Unidad" },
+            { nombre: "🌾 Arroz", cantidad: 1, ubicacion: "alacena", unidad: "Kilo" },
+            { nombre: "🍝 Fideos", cantidad: 2, ubicacion: "alacena", unidad: "Paquete" },
+            { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa", unidad: "Unidad" }
         ];
 
         function cargarInventoryDeMemoria() {
@@ -212,10 +235,23 @@
     filtrados.forEach((item) => {
         const li = document.createElement('li');
         li.className = "product-card";
+
+        let vencimientoHTML = '';
+        if (item.vencimiento) {
+            const estado = estadoVencimiento(item.vencimiento);
+            const etiqueta = estado === 'vencido' ? `⚠️ Venció ${formatearFecha(item.vencimiento)}` : `⏳ ${formatearFecha(item.vencimiento)}`;
+            vencimientoHTML = `<span class="venc-badge venc-${estado}">${etiqueta}</span>`;
+        }
+
         li.innerHTML = `
-            <span class="product-name">${item.nombre}</span>
+            <div class="product-info">
+                <span class="product-name">${item.nombre}</span>
+                <div class="product-meta">
+                    <span class="unidad-tag">${item.unidad || 'Unidad'}</span>
+                    ${vencimientoHTML}
+                </div>
+            </div>
             <div class="controls-wrapper">
-                <!-- Ahora realIndex apunta exactamente a la posición global correcta -->
                 <button onclick="cambiarCantidad(${item.realIndex}, -1)" class="btn-counter">-</button>
                 <span id="badge-${item.realIndex}" class="count-badge count-${filtroActual}">${item.cantidad}</span>
                 <button onclick="cambiarCantidad(${item.realIndex}, 1)" class="btn-counter">+</button>
@@ -224,6 +260,21 @@
         `;
         listaUl.appendChild(li);
     });
+}
+
+function formatearFecha(fechaStr) {
+    const [anio, mes, dia] = fechaStr.split('-');
+    return `${dia}/${mes}`;
+}
+
+function estadoVencimiento(fechaStr) {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fecha = new Date(fechaStr + 'T00:00:00');
+    const diffDias = Math.round((fecha - hoy) / 86400000);
+    if (diffDias < 0) return 'vencido';
+    if (diffDias <= 3) return 'proximo';
+    return 'ok';
 }
 
 // FUNCIÓN ÚNICA DE CONTROL DE STOCK PRINCIPAL (OPTIMIZADA)
@@ -257,7 +308,7 @@ function cambiarCantidad(index, cambio) {
         function abrirModalAgregar() { 
             document.getElementById('nuevo-nombre').value = '';
             cantidadModalActual = 1;
-            document.getElementById('modal-cantidad-valor').innerText = '1';
+            document.getElementById('modal-cantidad-valor').value = '1';
             document.getElementById('modal-agregar').classList.remove('hidden'); 
         }
         
@@ -274,7 +325,14 @@ function cambiarCantidad(index, cambio) {
         function modificarCantidadModal(cambio) {
             cantidadModalActual += cambio;
             if (cantidadModalActual < 1) cantidadModalActual = 1;
-            document.getElementById('modal-cantidad-valor').innerText = cantidadModalActual;
+            document.getElementById('modal-cantidad-valor').value = cantidadModalActual;
+        }
+
+        function fijarCantidadModal(valor) {
+            let numero = parseInt(valor);
+            if (isNaN(numero) || numero < 1) numero = 1;
+            cantidadModalActual = numero;
+            document.getElementById('modal-cantidad-valor').value = cantidadModalActual;
         }
 
         function eliminarAlimentoTotal(index) {
@@ -288,6 +346,8 @@ function cambiarCantidad(index, cambio) {
         function agregarAlimento() {
             const nombreInput = document.getElementById('nuevo-nombre');
             const ubicacionSelect = document.getElementById('nueva-ubicacion');
+            const unidadSelect = document.getElementById('nueva-unidad');
+            const vencimientoInput = document.getElementById('nuevo-vencimiento');
             
             const nombreLimpio = nombreInput.value.trim();
             if (!nombreLimpio) return;
@@ -297,19 +357,34 @@ function cambiarCantidad(index, cambio) {
                 item.nombre.toLowerCase() === nombreBusqueda && 
                 item.ubicacion === ubicacionSelect.value
             );
+
+            // La Docena es un multiplicador al cargar: "1 Docena" se guarda como 12 unidades sueltas
+            let cantidadFinal = cantidadModalActual;
+            let unidadFinal = unidadSelect.value;
+            if (unidadSelect.value === 'Docena') {
+                cantidadFinal = cantidadModalActual * 12;
+                unidadFinal = 'Unidad';
+            }
             
             if (productoExistente) {
-                productoExistente.cantidad += cantidadModalActual;
+                productoExistente.cantidad += cantidadFinal;
             } else {
-                inventario.push({ nombre: nombreLimpio, cantidad: cantidadModalActual, ubicacion: ubicacionSelect.value });
+                inventario.push({ 
+                    nombre: nombreLimpio, 
+                    cantidad: cantidadFinal, 
+                    ubicacion: ubicacionSelect.value,
+                    unidad: unidadFinal,
+                    vencimiento: vencimientoInput.value || null
+                });
             }
             
             guardarInventarioEnMemoria();
             cambiarFiltroUbicacion(ubicacionSelect.value);
             
             nombreInput.value = '';
+            vencimientoInput.value = '';
             cantidadModalActual = 1;
-            document.getElementById('modal-cantidad-valor').innerText = '1';
+            document.getElementById('modal-cantidad-valor').value = '1';
             
             cerrarModalAgregar();
         }
