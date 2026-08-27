@@ -4,7 +4,7 @@
   "description": "Controlá el stock de tu heladera, alacena y despensa, y recibí sugerencias de recetas con IA.",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#f8fafc",
   "theme_color": "#1e1b4b",
@@ -63,5 +63,8 @@
       "form_factor": "narrow",
       "label": "Recetas con IA"
     }
+  ],
+  "display_override": [
+    "window-controls-overlay"
   ]
 }
