@@ -33,5 +33,35 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "categories": [
+    "food",
+    "lifestyle",
+    "utilities"
+  ],
+  "id": "almcacen_app",
+  "lang": "es",
+  "screenshots": [
+    {
+      "src": "/screenshots/Screenshot_20260827-103539.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Pantalla principal"
+    },
+    {
+      "src": "/screenshots/Screenshot_20260827-103543.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Gestión de stock"
+    },
+    {
+      "src": "/screenshots/Screenshot_20260827-103547.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Recetas con IA"
+    }
   ]
 }
