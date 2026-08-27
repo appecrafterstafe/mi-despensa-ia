@@ -169,6 +169,8 @@ const SUPABASE_KEY = "sb_publishable_IbpLwe16Y6XA85CkPX53Cg_Re9rbRBz";
 // si usáramos el mismo nombre, se pisan entre sí y el login deja de funcionar.
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let usuarioActual = null;
+let modoNube = false; // true = guardando en Supabase, false = guardando en localStorage
+let cargaInicialHecha = false;
 
         let filtroActual = "heladera"; 
         let vistaActual = "inventario"; 
@@ -196,6 +198,66 @@ let usuarioActual = null;
 
         function guardarInventarioEnMemoria() {
             localStorage.setItem("almacen_familiar_stock", JSON.stringify(inventario));
+        }
+
+        // Trae los datos correctos según si hay sesión iniciada o no
+        async function cargarInventario() {
+            if (usuarioActual) {
+                modoNube = true;
+                const { data, error } = await supabaseClient
+                    .from('alimentos')
+                    .select('*')
+                    .order('created_at', { ascending: true });
+
+                if (error) {
+                    console.error('Error cargando desde la nube:', error.message);
+                    inventario = [];
+                } else if (data.length === 0) {
+                    // Primer login: si tenía algo guardado en este navegador, lo subimos a la nube
+                    await migrarLocalANube();
+                    const { data: dataFinal, error: errorFinal } = await supabaseClient
+                        .from('alimentos')
+                        .select('*')
+                        .order('created_at', { ascending: true });
+                    inventario = errorFinal ? [] : dataFinal.map(mapearFilaSupabase);
+                } else {
+                    inventario = data.map(mapearFilaSupabase);
+                }
+            } else {
+                modoNube = false;
+                cargarInventoryDeMemoria();
+            }
+            renderizarInventario();
+        }
+
+        function mapearFilaSupabase(fila) {
+            return {
+                id: fila.id,
+                nombre: fila.nombre,
+                cantidad: fila.cantidad,
+                ubicacion: fila.ubicacion,
+                unidad: fila.unidad || 'Unidad',
+                vencimiento: fila.vencimiento
+            };
+        }
+
+        async function migrarLocalANube() {
+            const datosGuardados = localStorage.getItem("almacen_familiar_stock");
+            if (!datosGuardados) return;
+            const itemsLocales = JSON.parse(datosGuardados);
+            if (!itemsLocales || itemsLocales.length === 0) return;
+
+            const filas = itemsLocales.map(item => ({
+                user_id: usuarioActual.id,
+                nombre: item.nombre,
+                cantidad: item.cantidad,
+                ubicacion: item.ubicacion,
+                unidad: item.unidad || 'Unidad',
+                vencimiento: item.vencimiento || null
+            }));
+
+            const { error } = await supabaseClient.from('alimentos').insert(filas);
+            if (error) console.error('Error migrando a la nube:', error.message);
         }
 
         function navegarA(pantalla) {
@@ -290,7 +352,7 @@ function estadoVencimiento(fechaStr) {
 }
 
 // FUNCIÓN ÚNICA DE CONTROL DE STOCK PRINCIPAL (OPTIMIZADA)
-function cambiarCantidad(index, cambio) {
+async function cambiarCantidad(index, cambio) {
     // 1. Validar que el elemento exista
     if (!inventario[index]) return;
     
@@ -298,20 +360,26 @@ function cambiarCantidad(index, cambio) {
     let actual = parseInt(inventario[index].cantidad);
     if (isNaN(actual)) actual = 0;
     
-    inventario[index].cantidad = Math.max(0, actual + cambio);
+    const nuevaCantidad = Math.max(0, actual + cambio);
+    inventario[index].cantidad = nuevaCantidad;
     
-    // 3. Guardar en el almacenamiento local
-    guardarInventarioEnMemoria();
-    
-    // 4. ACTUALIZACIÓN INSTANTÁNEA: en vez de re-renderizar toda la lista
-    // (lo cual, con setTimeout, dependía de que el navegador liberara el hilo),
-    // tocamos directamente el número en pantalla. Es inmediato y no depende del re-render.
+    // 3. ACTUALIZACIÓN INSTANTÁNEA en pantalla, sin esperar al guardado
     const badge = document.getElementById(`badge-${index}`);
     if (badge) {
-        badge.textContent = inventario[index].cantidad;
+        badge.textContent = nuevaCantidad;
     } else {
-        // Si por algún motivo el badge no está en pantalla (raro), recurrimos al render completo
         renderizarInventario();
+    }
+
+    // 4. Guardar donde corresponda
+    if (modoNube) {
+        const { error } = await supabaseClient
+            .from('alimentos')
+            .update({ cantidad: nuevaCantidad })
+            .eq('id', inventario[index].id);
+        if (error) console.error('Error actualizando cantidad en la nube:', error.message);
+    } else {
+        guardarInventarioEnMemoria();
     }
 }
 
@@ -347,15 +415,23 @@ function cambiarCantidad(index, cambio) {
             document.getElementById('modal-cantidad-valor').value = cantidadModalActual;
         }
 
-        function eliminarAlimentoTotal(index) {
+        async function eliminarAlimentoTotal(index) {
             const confirmar = confirm(`¿Estás seguro de que querés quitar "${inventario[index].nombre}" del almacén?`);
             if (!confirmar) return;
+
+            const item = inventario[index];
             inventario.splice(index, 1);
-            guardarInventarioEnMemoria();
             renderizarInventario();
+
+            if (modoNube) {
+                const { error } = await supabaseClient.from('alimentos').delete().eq('id', item.id);
+                if (error) console.error('Error eliminando en la nube:', error.message);
+            } else {
+                guardarInventarioEnMemoria();
+            }
         }
 
-        function agregarAlimento() {
+        async function agregarAlimento() {
             const nombreInput = document.getElementById('nuevo-nombre');
             const ubicacionSelect = document.getElementById('nueva-ubicacion');
             const unidadSelect = document.getElementById('nueva-unidad');
@@ -377,20 +453,53 @@ function cambiarCantidad(index, cambio) {
                 cantidadFinal = cantidadModalActual * 12;
                 unidadFinal = 'Unidad';
             }
+            const vencimientoFinal = vencimientoInput.value || null;
             
             if (productoExistente) {
-                productoExistente.cantidad += cantidadFinal;
+                const nuevaCantidad = productoExistente.cantidad + cantidadFinal;
+                productoExistente.cantidad = nuevaCantidad;
+
+                if (modoNube) {
+                    const { error } = await supabaseClient
+                        .from('alimentos')
+                        .update({ cantidad: nuevaCantidad })
+                        .eq('id', productoExistente.id);
+                    if (error) console.error('Error actualizando en la nube:', error.message);
+                } else {
+                    guardarInventarioEnMemoria();
+                }
             } else {
-                inventario.push({ 
-                    nombre: nombreLimpio, 
-                    cantidad: cantidadFinal, 
-                    ubicacion: ubicacionSelect.value,
-                    unidad: unidadFinal,
-                    vencimiento: vencimientoInput.value || null
-                });
+                if (modoNube) {
+                    const { data, error } = await supabaseClient
+                        .from('alimentos')
+                        .insert({
+                            user_id: usuarioActual.id,
+                            nombre: nombreLimpio,
+                            cantidad: cantidadFinal,
+                            ubicacion: ubicacionSelect.value,
+                            unidad: unidadFinal,
+                            vencimiento: vencimientoFinal
+                        })
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error('Error guardando en la nube:', error.message);
+                    } else {
+                        inventario.push(mapearFilaSupabase(data));
+                    }
+                } else {
+                    inventario.push({ 
+                        nombre: nombreLimpio, 
+                        cantidad: cantidadFinal, 
+                        ubicacion: ubicacionSelect.value,
+                        unidad: unidadFinal,
+                        vencimiento: vencimientoFinal
+                    });
+                    guardarInventarioEnMemoria();
+                }
             }
             
-            guardarInventarioEnMemoria();
             cambiarFiltroUbicacion(ubicacionSelect.value);
             
             nombreInput.value = '';
@@ -449,8 +558,6 @@ function cambiarCantidad(index, cambio) {
             }
         }
 
-        cargarInventoryDeMemoria();
-        renderizarInventario();
 // Iniciar sesión con un clic usando Google
 async function ingresarConGoogle() {
   const { error } = await supabaseClient.auth.signInWithOAuth({
@@ -467,13 +574,16 @@ async function cerrarSesion() {
   await supabaseClient.auth.signOut();
   usuarioActual = null;
   actualizarUISesion();
+  await cargarInventario();
 }
 
-// Verificar si hay alguien conectado al abrir la app
+// Verificar si hay alguien conectado al abrir la app, y cargar los datos correctos
 async function verificarSesion() {
   const { data: { user } } = await supabaseClient.auth.getUser();
   usuarioActual = user || null;
   actualizarUISesion();
+  await cargarInventario();
+  cargaInicialHecha = true;
 }
 
 // Refleja el estado de sesión en el badge del header
@@ -490,13 +600,17 @@ function actualizarUISesion() {
   }
 }
 
-// Ejecutar automáticamente al cargar la página
+// Ejecutar automáticamente al cargar la página (carga inicial única)
 document.addEventListener("DOMContentLoaded", verificarSesion);
 
-// Reacciona también si el login se completa después de volver de Google
+// Reacciona si el login se completa después de volver de Google, o si se cierra sesión
 supabaseClient.auth.onAuthStateChange((_event, session) => {
   usuarioActual = session ? session.user : null;
   actualizarUISesion();
+  // Evitamos recargar dos veces en el arranque: la carga inicial ya la hace verificarSesion()
+  if (cargaInicialHecha) {
+    cargarInventario();
+  }
 });
     </script>
 </body>
