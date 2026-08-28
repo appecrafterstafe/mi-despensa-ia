@@ -588,8 +588,9 @@ async function cerrarSesion() {
 
 // Verificar si hay alguien conectado al abrir la app, y cargar los datos correctos
 async function verificarSesion() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  usuarioActual = user || null;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+const user = session?.user || null;
+usuarioActual = user;
   actualizarUISesion();
   await cargarInventario();
   cargaInicialHecha = true;
