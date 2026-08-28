@@ -107,7 +107,7 @@
 
         <div class="form-group" style="margin-top:18px;">
             <label style="color:#c7d2fe;">¿Querés una receta específica?</label>
-            <input id="pedido-especifico" type="text" placeholder="Ej. Quiero cocinar un turrón de quaker" class="form-control">
+            <input id="pedido-especifico" type="text" placeholder="Ej. Quiero preparar un turrón de quaker" class="form-control">
         </div>
         <button id="btn-ia-especifico" onclick="generarRecetasConIA(true)" class="btn-ia" style="background: linear-gradient(90deg, #4f46e5, #7c3aed);">🔍 Buscar esa Receta</button>
     </div>
@@ -507,26 +507,43 @@ async function agregarAlimento() {
     }, 700);
 }
 
-async function generarRecetasConIA() {
-    const btn = document.getElementById('btn-ia');
+async function generarRecetasConIA(esEspecifico) {
+    const btnGeneral = document.getElementById('btn-ia');
+    const btnEspecifico = document.getElementById('btn-ia-especifico');
+    const btnActivo = esEspecifico ? btnEspecifico : btnGeneral;
     const contenedor = document.getElementById('contenedor-recetas');
     const resultadoTexto = document.getElementById('resultado-texto');
-    btn.innerText = "🤖 Cocinando ideas...";
-    btn.disabled = true;
-    contenedor.classList.remove('hidden');
-    resultadoTexto.innerHTML = `<span class="pulse-text">Consultando con Google Gemini...</span>`;
-    const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
-    if (disponibles.length === 0) {
-        resultadoTexto.innerHTML = "❌ No hay ingredientes en stock para cocinar.";
-        btn.innerText = "✨ Sugerir Menú de Cocina";
-        btn.disabled = false;
+    const inputPedido = document.getElementById('pedido-especifico');
+    const pedidoEspecifico = esEspecifico ? inputPedido.value.trim() : '';
+
+    if (esEspecifico && !pedidoEspecifico) {
+        resultadoTexto.innerHTML = "❌ Escribí qué querés cocinar primero.";
+        contenedor.classList.remove('hidden');
         return;
     }
+
+    const textoOriginalBtn = btnActivo.innerText;
+    btnActivo.innerText = "🤖 Cocinando ideas...";
+    btnActivo.disabled = true;
+    contenedor.classList.remove('hidden');
+    resultadoTexto.innerHTML = `<span class="pulse-text">Consultando con Google Gemini...</span>`;
+
+    const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
+    if (!esEspecifico && disponibles.length === 0) {
+        resultadoTexto.innerHTML = "❌ No hay ingredientes en stock para cocinar.";
+        btnActivo.innerText = textoOriginalBtn;
+        btnActivo.disabled = false;
+        return;
+    }
+
     try {
         const response = await fetch('/api/receta', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ingredientes: disponibles.join(", ") })
+            body: JSON.stringify({
+                ingredientes: disponibles.join(", "),
+                pedidoEspecifico: pedidoEspecifico
+            })
         });
         const data = await response.json();
         if (data?.candidates?.[0]?.content?.parts?.[0]) {
@@ -541,8 +558,8 @@ async function generarRecetasConIA() {
     } catch (error) {
         resultadoTexto.innerHTML = "❌ Error al conectar con el servidor.";
     } finally {
-        btn.innerText = "✨ Sugerir Menú de Cocina";
-        btn.disabled = false;
+        btnActivo.innerText = textoOriginalBtn;
+        btnActivo.disabled = false;
     }
 }
 
