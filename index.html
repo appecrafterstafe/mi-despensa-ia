@@ -605,11 +605,17 @@ async function generarRecetasConIA(esEspecifico) {
 }
 
 async function ingresarConGoogle() {
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin }
-    });
-    if (error) console.error("Error:", error.message);
+    try {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.origin }
+        });
+        if (error) {
+            alert("Error de Supabase: " + error.message);
+        }
+    } catch (e) {
+        alert("Error inesperado: " + e.message);
+    }
 }
 
 async function cerrarSesion() {
