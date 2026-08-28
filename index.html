@@ -169,8 +169,10 @@ let storageSeguro;
 try {
     storageSeguro = window.localStorage;
     storageSeguro.getItem('test');
+    document.title = "OK-localStorage";
 } catch (e) {
     console.warn('localStorage no disponible, usando memoria temporal', e);
+    document.title = "FALLA-localStorage";
     const memoria = {};
     storageSeguro = {
         getItem: (key) => memoria[key] || null,
@@ -179,6 +181,12 @@ try {
     };
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    const aviso = document.createElement('div');
+    aviso.style.cssText = "position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;z-index:9999;font-weight:bold;text-align:center;font-size:14px;";
+    aviso.innerText = document.title.includes("OK") ? "✅ localStorage FUNCIONA" : "❌ localStorage BLOQUEADO";
+    document.body.appendChild(aviso);
+});
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: {
         persistSession: true,
