@@ -596,12 +596,12 @@ async function cerrarSesion() {
 
 // Verificar si hay alguien conectado al abrir la app, y cargar los datos correctos
 async function verificarSesion() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-const user = session?.user || null;
-usuarioActual = user;
-  actualizarUISesion();
-  await cargarInventario();
-  cargaInicialHecha = true;
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const user = session?.user || null;
+    usuarioActual = user;
+    actualizarUISesion();
+    await cargarInventario();
+    cargaInicialHecha = true;
 }
 
 // Refleja el estado de sesión en el badge del header
