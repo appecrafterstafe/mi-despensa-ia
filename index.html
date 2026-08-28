@@ -100,16 +100,22 @@
         </div>
 
         <div id="vista-chef" class="hidden">
-            <div class="chef-card">
-                <h2>🤖 Chef Inteligente IA</h2>
-                <p>La IA analizará tu stock guardado de forma directa en tu dispositivo para sugerirte platos instantáneos.</p>
-                <button id="btn-ia" onclick="generarRecetasConIA()" class="btn-ia">✨ Sugerir Menú de Cocina</button>
-            </div>
-            <div id="contenedor-recetas" class="output-box hidden">
-                <h3 class="output-title">🍽️ Sugerencias Exclusivas:</h3>
-                <div id="resultado-texto" class="output-content"></div>
-            </div>
+    <div class="chef-card">
+        <h2>🤖 Chef Inteligente IA</h2>
+        <p>La IA analizará tu stock guardado de forma directa en tu dispositivo para sugerirte platos instantáneos.</p>
+        <button id="btn-ia" onclick="generarRecetasConIA()" class="btn-ia">✨ Sugerir Menú de Cocina</button>
+
+        <div class="form-group" style="margin-top:18px;">
+            <label style="color:#c7d2fe;">¿Querés una receta específica?</label>
+            <input id="pedido-especifico" type="text" placeholder="Ej. Quiero cocinar un turrón de quaker" class="form-control">
         </div>
+        <button id="btn-ia-especifico" onclick="generarRecetasConIA(true)" class="btn-ia" style="background: linear-gradient(90deg, #4f46e5, #7c3aed);">🔍 Buscar esa Receta</button>
+    </div>
+    <div id="contenedor-recetas" class="output-box hidden">
+        <h3 class="output-title">🍽️ Sugerencias Exclusivas:</h3>
+        <div id="resultado-texto" class="output-content"></div>
+    </div>
+</div>
     </main>
 
     <button onclick="abrirModalAgregar()" id="fab-android" class="fab-android">+</button>
