@@ -165,11 +165,25 @@
 const SUPABASE_URL = "https://ienlcmxasdlhmrkrqkci.supabase.co";
 const SUPABASE_KEY = "sb_publishable_IbpLwe16Y6XA85CkPX53Cg_Re9rbRBz";
 
+let storageSeguro;
+try {
+    storageSeguro = window.localStorage;
+    storageSeguro.getItem('test');
+} catch (e) {
+    console.warn('localStorage no disponible, usando memoria temporal', e);
+    const memoria = {};
+    storageSeguro = {
+        getItem: (key) => memoria[key] || null,
+        setItem: (key, value) => { memoria[key] = value; },
+        removeItem: (key) => { delete memoria[key]; }
+    };
+}
+
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: {
         persistSession: true,
         storageKey: 'almacen-auth',
-        storage: window.localStorage,
+        storage: storageSeguro,
         autoRefreshToken: true,
         detectSessionInUrl: true
     }
