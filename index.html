@@ -8,14 +8,12 @@
     <link rel="icon" href="/icons/icon-192.png">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta name="theme-color" content="#1e1b4b">
-    <!-- LIBRERÍA OFICIAL DE SUPABASE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* CONFIGURACIÓN BASE ESTILO ANDROID NATIVO */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #f8fafc; color: #1e293b; min-height: 100vh; flex-direction: column; display: flex; padding-bottom: 90px; overscroll-behavior-y: contain; -webkit-tap-highlight-color: transparent; user-select: none; }
+        body { background-color: #f8fafc; color: #1e293b; min-height: 100vh; flex-direction: column; display: flex; padding-bottom: 90px; overscroll-behavior-y: contain; -webkit-tap-highlight-color: transparent; }
         header { background: linear-gradient(135deg, #0f172a, #1e1b4b); padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 2px solid rgba(99, 102, 241, 0.2); color: white; }
-        header h1 { font-size: 22px; font-weight: 900; tracking: -0.05em; }
+        header h1 { font-size: 22px; font-weight: 900; }
         header p { font-size: 11px; color: #a5b4fc; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
         .badge-online { font-size: 11px; background: rgba(52, 211, 153, 0.2); color: #34d399; font-weight: 700; padding: 6px 12px; border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 20px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
         .badge-dot { width: 8px; height: 8px; background-color: #34d399; border-radius: 50%; display: inline-block; }
@@ -55,7 +53,7 @@
         .fab-android { position: fixed; bottom: 100px; right: 20px; width: 62px; height: 62px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; border: none; border-radius: 20px; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4); display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; transition: all 0.2s ease; z-index: 50; }
         .fab-android:active { transform: scale(0.9); }
         nav { position: fixed; bottom: 0; left: 0; right: 0; height: 76px; background-color: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05); padding: 0 16px; z-index: 40; }
-        .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 56px; border-radius: 18px; border: none; background: transparent; color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; tracking: 0.05em; cursor: pointer; transition: all 0.2s ease; }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 56px; border-radius: 18px; border: none; background: transparent; color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; }
         .nav-btn .icon { font-size: 24px; margin-bottom: 3px; }
         .nav-btn.active { color: #4f46e5; background-color: #e0e7ff; }
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.55); backdrop-filter: blur(5px); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
@@ -64,7 +62,7 @@
         .modal-header h3 { font-size: 19px; font-weight: 900; color: #0f172a; }
         .btn-close { width: 34px; height: 34px; border-radius: 50%; background-color: #f1f5f9; border: none; font-weight: 800; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
         .form-group { margin-bottom: 16px; }
-        .form-group label { font-size: 11px; font-weight: 900; color: #94a3b8; text-transform: uppercase; tracking: 0.05em; display: block; margin-bottom: 6px; }
+        .form-group label { font-size: 11px; font-weight: 900; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 6px; }
         .form-control { width: 100%; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; }
         .form-control:focus { border-color: #4f46e5; background-color: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
         .modal-counter-wrapper { display: flex; align-items: center; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 4px; justify-content: space-between; }
@@ -72,7 +70,7 @@
         .modal-counter-btn:active { background-color: #e2e8f0; transform: scale(0.95); }
         .modal-counter-value { font-size: 16px; font-weight: 900; color: #0f172a; text-align: center; flex: 1; border: none; background: transparent; outline: none; -moz-appearance: textfield; }
         .modal-counter-value::-webkit-outer-spin-button, .modal-counter-value::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .btn-submit { width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none; padding: 16px; border-radius: 14px; color: white; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+        .btn-submit { width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none; padding: 16px; border-radius: 14px; color: white; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); touch-action: manipulation; }
         .pulse-text { color: #f97316; font-weight: 700; animation: pulse 1.5s infinite; font-size: 13px; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .btn-delete { width: 38px; height: 38px; border-radius: 12px; border: 1px solid #fee2e2; background-color: #fef2f2; color: #ef4444; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease; margin-left: 4px; }
@@ -159,18 +157,14 @@
                     <option value="despensa">📦 Despensa</option>
                 </select>
             </div>
-            <button onclick="agregarAlimento()" class="btn-submit">Confirmar Guardado</button>
+            <button id="btn-confirmar" class="btn-submit">Confirmar Guardado</button>
         </div>
     </div>
-    <!-- LOGICA DE CONTROL TOTAL DESDE EL NAVEGADOR -->
+
     <script>
-// Conexión con tu base de datos
 const SUPABASE_URL = "https://ienlcmxasdlhmrkrqkci.supabase.co";
 const SUPABASE_KEY = "sb_publishable_IbpLwe16Y6XA85CkPX53Cg_Re9rbRBz";
 
-// OJO: la librería del CDN expone su propio objeto global "supabase".
-// Por eso llamamos a nuestro cliente "supabaseClient" y no "supabase" — 
-// si usáramos el mismo nombre, se pisan entre sí y el login deja de funcionar.
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: {
         persistSession: true,
@@ -180,135 +174,125 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         detectSessionInUrl: true
     }
 });
+
 let usuarioActual = null;
-let modoNube = false; // true = guardando en Supabase, false = guardando en localStorage
+let modoNube = false;
 let cargaInicialHecha = false;
+let filtroActual = "heladera";
+let vistaActual = "inventario";
+let inventario = [];
+let cantidadModalActual = 1;
 
-        let filtroActual = "heladera"; 
-        let vistaActual = "inventario"; 
-        let inventario = [];
-        let cantidadModalActual = 1;
+const stockPredeterminado = [
+    { nombre: "🥚 Huevos", cantidad: 6, ubicacion: "heladera", unidad: "Unidad" },
+    { nombre: "🥛 Leche", cantidad: 1, ubicacion: "heladera", unidad: "Litro" },
+    { nombre: "🧅 Cebolla", cantidad: 3, ubicacion: "heladera", unidad: "Unidad" },
+    { nombre: "🌾 Arroz", cantidad: 1, ubicacion: "alacena", unidad: "Kilo" },
+    { nombre: "🍝 Fideos", cantidad: 2, ubicacion: "alacena", unidad: "Paquete" },
+    { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa", unidad: "Unidad" }
+];
 
-        const stockPredeterminado = [
-            { nombre: "🥚 Huevos", cantidad: 6, ubicacion: "heladera", unidad: "Unidad" },
-            { nombre: "🥛 Leche", cantidad: 1, ubicacion: "heladera", unidad: "Litro" },
-            { nombre: "🧅 Cebolla", cantidad: 3, ubicacion: "heladera", unidad: "Unidad" },
-            { nombre: "🌾 Arroz", cantidad: 1, ubicacion: "alacena", unidad: "Kilo" },
-            { nombre: "🍝 Fideos", cantidad: 2, ubicacion: "alacena", unidad: "Paquete" },
-            { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa", unidad: "Unidad" }
-        ];
+function cargarInventoryDeMemoria() {
+    const datosGuardados = localStorage.getItem("almacen_familiar_stock");
+    if (datosGuardados) {
+        inventario = JSON.parse(datosGuardados);
+    } else {
+        inventario = [...stockPredeterminado];
+        guardarInventarioEnMemoria();
+    }
+}
 
-        function cargarInventoryDeMemoria() {
-            const datosGuardados = localStorage.getItem("almacen_familiar_stock");
-            if (datosGuardados) {
-                inventario = JSON.parse(datosGuardados);
-            } else {
-                inventario = [...stockPredeterminado];
-                guardarInventarioEnMemoria();
-            }
+function guardarInventarioEnMemoria() {
+    localStorage.setItem("almacen_familiar_stock", JSON.stringify(inventario));
+}
+
+async function cargarInventario() {
+    if (usuarioActual) {
+        modoNube = true;
+        const { data, error } = await supabaseClient
+            .from('alimentos')
+            .select('*')
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error('Error cargando desde la nube:', error.message);
+            inventario = [];
+        } else if (data.length === 0) {
+            await migrarLocalANube();
+            const { data: dataFinal, error: errorFinal } = await supabaseClient
+                .from('alimentos')
+                .select('*')
+                .order('created_at', { ascending: true });
+            inventario = errorFinal ? [] : dataFinal.map(mapearFilaSupabase);
+        } else {
+            inventario = data.map(mapearFilaSupabase);
         }
+    } else {
+        modoNube = false;
+        cargarInventoryDeMemoria();
+    }
+    renderizarInventario();
+}
 
-        function guardarInventarioEnMemoria() {
-            localStorage.setItem("almacen_familiar_stock", JSON.stringify(inventario));
-        }
+function mapearFilaSupabase(fila) {
+    return {
+        id: fila.id,
+        nombre: fila.nombre,
+        cantidad: fila.cantidad,
+        ubicacion: fila.ubicacion,
+        unidad: fila.unidad || 'Unidad',
+        vencimiento: fila.vencimiento
+    };
+}
 
-        // Trae los datos correctos según si hay sesión iniciada o no
-        async function cargarInventario() {
-            if (usuarioActual) {
-                modoNube = true;
-                const { data, error } = await supabaseClient
-                    .from('alimentos')
-                    .select('*')
-                    .order('created_at', { ascending: true });
+async function migrarLocalANube() {
+    const datosGuardados = localStorage.getItem("almacen_familiar_stock");
+    if (!datosGuardados) return;
+    const itemsLocales = JSON.parse(datosGuardados);
+    if (!itemsLocales || itemsLocales.length === 0) return;
+    const filas = itemsLocales.map(item => ({
+        user_id: usuarioActual.id,
+        nombre: item.nombre,
+        cantidad: item.cantidad,
+        ubicacion: item.ubicacion,
+        unidad: item.unidad || 'Unidad',
+        vencimiento: item.vencimiento || null
+    }));
+    const { error } = await supabaseClient.from('alimentos').insert(filas);
+    if (error) console.error('Error migrando a la nube:', error.message);
+}
 
-                if (error) {
-                    console.error('Error cargando desde la nube:', error.message);
-                    inventario = [];
-                } else if (data.length === 0) {
-                    // Primer login: si tenía algo guardado en este navegador, lo subimos a la nube
-                    await migrarLocalANube();
-                    const { data: dataFinal, error: errorFinal } = await supabaseClient
-                        .from('alimentos')
-                        .select('*')
-                        .order('created_at', { ascending: true });
-                    inventario = errorFinal ? [] : dataFinal.map(mapearFilaSupabase);
-                } else {
-                    inventario = data.map(mapearFilaSupabase);
-                }
-            } else {
-                modoNube = false;
-                cargarInventoryDeMemoria();
-            }
-            renderizarInventario();
-        }
+function navegarA(pantalla) {
+    vistaActual = pantalla;
+    if (pantalla === 'inventario') {
+        document.getElementById('vista-inventario').classList.remove('hidden');
+        document.getElementById('vista-chef').classList.add('hidden');
+        document.getElementById('fab-android').classList.remove('hidden');
+        document.getElementById('nav-inventario').className = "nav-btn active";
+        document.getElementById('nav-chef').className = "nav-btn";
+        document.getElementById('subtitulo-seccion').innerText = `Stock • ${filtroActual.toUpperCase()}`;
+    } else {
+        document.getElementById('vista-inventario').classList.add('hidden');
+        document.getElementById('vista-chef').classList.remove('hidden');
+        document.getElementById('fab-android').classList.add('hidden');
+        document.getElementById('nav-inventario').className = "nav-btn";
+        document.getElementById('nav-chef').className = "nav-btn active";
+        document.getElementById('subtitulo-seccion').innerText = "Chef IA • Generador";
+    }
+}
 
-        function mapearFilaSupabase(fila) {
-            return {
-                id: fila.id,
-                nombre: fila.nombre,
-                cantidad: fila.cantidad,
-                ubicacion: fila.ubicacion,
-                unidad: fila.unidad || 'Unidad',
-                vencimiento: fila.vencimiento
-            };
-        }
+function cambiarFiltroUbicacion(ubicacion) {
+    filtroActual = ubicacion;
+    ['heladera', 'alacena', 'despensa'].forEach(u => {
+        document.getElementById(`chip-${u}`).className = u === ubicacion ? `chip active-${u}` : "chip";
+    });
+    document.getElementById('subtitulo-seccion').innerText = `Stock • ${ubicacion.toUpperCase()}`;
+    renderizarInventario();
+}
 
-        async function migrarLocalANube() {
-            const datosGuardados = localStorage.getItem("almacen_familiar_stock");
-            if (!datosGuardados) return;
-            const itemsLocales = JSON.parse(datosGuardados);
-            if (!itemsLocales || itemsLocales.length === 0) return;
-
-            const filas = itemsLocales.map(item => ({
-                user_id: usuarioActual.id,
-                nombre: item.nombre,
-                cantidad: item.cantidad,
-                ubicacion: item.ubicacion,
-                unidad: item.unidad || 'Unidad',
-                vencimiento: item.vencimiento || null
-            }));
-
-            const { error } = await supabaseClient.from('alimentos').insert(filas);
-            if (error) console.error('Error migrando a la nube:', error.message);
-        }
-
-        function navegarA(pantalla) {
-            vistaActual = pantalla;
-            const btnInv = document.getElementById('nav-inventario');
-            const btnChef = document.getElementById('nav-chef');
-            
-            if(pantalla === 'inventario') {
-                document.getElementById('vista-inventario').classList.remove('hidden');
-                document.getElementById('vista-chef').classList.add('hidden');
-                document.getElementById('fab-android').classList.remove('hidden');
-                btnInv.className = "nav-btn active";
-                btnChef.className = "nav-btn";
-                document.getElementById('subtitulo-seccion').innerText = `Stock • ${filtroActual.toUpperCase()}`;
-            } else {
-                document.getElementById('vista-inventario').classList.add('hidden');
-                document.getElementById('vista-chef').classList.remove('hidden');
-                document.getElementById('fab-android').classList.add('hidden');
-                btnInv.className = "nav-btn";
-                btnChef.className = "nav-btn active";
-                document.getElementById('subtitulo-seccion').innerText = "Chef IA • Generador";
-            }
-        }
-
-        function cambiarFiltroUbicacion(ubicacion) {
-            filtroActual = ubicacion;
-            ['heladera', 'alacena', 'despensa'].forEach(u => {
-                const btn = document.getElementById(`chip-${u}`);
-                btn.className = u === ubicacion ? `chip active-${u}` : "chip";
-            });
-            document.getElementById('subtitulo-seccion').innerText = `Stock • ${ubicacion.toUpperCase()}`;
-            renderizarInventario();
-        }
-
-                        function renderizarInventario() {
+function renderizarInventario() {
     const listaUl = document.getElementById('lista-productos-movil');
     listaUl.innerHTML = '';
-    
-    // CORREGIDO: Mapeamos primero sobre el inventario completo para guardar el índice global real
     const filtrados = inventario
         .map((item, index) => ({ ...item, realIndex: index }))
         .filter(item => item.ubicacion === filtroActual);
@@ -321,14 +305,12 @@ let cargaInicialHecha = false;
     filtrados.forEach((item) => {
         const li = document.createElement('li');
         li.className = "product-card";
-
         let vencimientoHTML = '';
         if (item.vencimiento) {
             const estado = estadoVencimiento(item.vencimiento);
             const etiqueta = estado === 'vencido' ? `⚠️ Venció ${formatearFecha(item.vencimiento)}` : `⏳ ${formatearFecha(item.vencimiento)}`;
             vencimientoHTML = `<span class="venc-badge venc-${estado}">${etiqueta}</span>`;
         }
-
         li.innerHTML = `
             <div class="product-info">
                 <span class="product-name">${item.nombre}</span>
@@ -341,7 +323,7 @@ let cargaInicialHecha = false;
                 <button onclick="cambiarCantidad(${item.realIndex}, -1)" class="btn-counter">-</button>
                 <span id="badge-${item.realIndex}" class="count-badge count-${filtroActual}">${item.cantidad}</span>
                 <button onclick="cambiarCantidad(${item.realIndex}, 1)" class="btn-counter">+</button>
-                <button onclick="eliminarAlimentoTotal(${item.realIndex})" class="btn-delete" title="Eliminar del todo">🗑️</button>
+                <button onclick="eliminarAlimentoTotal(${item.realIndex})" class="btn-delete">🗑️</button>
             </div>
         `;
         listaUl.appendChild(li);
@@ -363,102 +345,83 @@ function estadoVencimiento(fechaStr) {
     return 'ok';
 }
 
-// FUNCIÓN ÚNICA DE CONTROL DE STOCK PRINCIPAL (OPTIMIZADA)
 async function cambiarCantidad(index, cambio) {
-    // 1. Validar que el elemento exista
     if (!inventario[index]) return;
-    
-    // 2. Asegurar que la cantidad sea un número válido y realizar la operación
     let actual = parseInt(inventario[index].cantidad);
     if (isNaN(actual)) actual = 0;
-    
     const nuevaCantidad = Math.max(0, actual + cambio);
     inventario[index].cantidad = nuevaCantidad;
-    
-    // 3. ACTUALIZACIÓN INSTANTÁNEA en pantalla, sin esperar al guardado
     const badge = document.getElementById(`badge-${index}`);
-    if (badge) {
-        badge.textContent = nuevaCantidad;
-    } else {
-        renderizarInventario();
-    }
+    if (badge) badge.textContent = nuevaCantidad;
+    else renderizarInventario();
 
-    // 4. Guardar donde corresponda
     if (modoNube) {
-        const { error } = await supabaseClient
-            .from('alimentos')
-            .update({ cantidad: nuevaCantidad })
-            .eq('id', inventario[index].id);
-        if (error) console.error('Error actualizando cantidad en la nube:', error.message);
+        const { error } = await supabaseClient.from('alimentos').update({ cantidad: nuevaCantidad }).eq('id', inventario[index].id);
+        if (error) console.error('Error actualizando cantidad:', error.message);
     } else {
         guardarInventarioEnMemoria();
     }
 }
 
+function abrirModalAgregar() {
+    document.getElementById('nuevo-nombre').value = '';
+    cantidadModalActual = 1;
+    document.getElementById('modal-cantidad-valor').value = '1';
+    document.getElementById('modal-agregar').classList.remove('hidden');
+}
 
-        // LÓGICA MODAL INTERACTIVA
-        function abrirModalAgregar() { 
-            document.getElementById('nuevo-nombre').value = '';
-            cantidadModalActual = 1;
-            document.getElementById('modal-cantidad-valor').value = '1';
-            document.getElementById('modal-agregar').classList.remove('hidden'); 
-        }
-        
-        function cerrarModalAgregar() { 
-            document.getElementById('modal-agregar').classList.add('hidden'); 
-        }
+function cerrarModalAgregar() {
+    document.getElementById('modal-agregar').classList.add('hidden');
+}
 
-        function cerrarModalPorClicAfuera(event) {
-            if (event.target.id === 'modal-agregar') {
-                cerrarModalAgregar();
-            }
-        }
+function cerrarModalPorClicAfuera(event) {
+    if (event.target.id === 'modal-agregar') cerrarModalAgregar();
+}
 
-        function modificarCantidadModal(cambio) {
-            cantidadModalActual += cambio;
-            if (cantidadModalActual < 1) cantidadModalActual = 1;
-            document.getElementById('modal-cantidad-valor').value = cantidadModalActual;
-        }
+function modificarCantidadModal(cambio) {
+    cantidadModalActual += cambio;
+    if (cantidadModalActual < 1) cantidadModalActual = 1;
+    document.getElementById('modal-cantidad-valor').value = cantidadModalActual;
+}
 
-        function fijarCantidadModal(valor) {
-            let numero = parseInt(valor);
-            if (isNaN(numero) || numero < 1) numero = 1;
-            cantidadModalActual = numero;
-            document.getElementById('modal-cantidad-valor').value = cantidadModalActual;
-        }
+function fijarCantidadModal(valor) {
+    let numero = parseInt(valor);
+    if (isNaN(numero) || numero < 1) numero = 1;
+    cantidadModalActual = numero;
+    document.getElementById('modal-cantidad-valor').value = cantidadModalActual;
+}
 
-        async function eliminarAlimentoTotal(index) {
-            const confirmar = confirm(`¿Estás seguro de que querés quitar "${inventario[index].nombre}" del almacén?`);
-            if (!confirmar) return;
+async function eliminarAlimentoTotal(index) {
+    const confirmar = confirm(`¿Estás seguro de que querés quitar "${inventario[index].nombre}" del almacén?`);
+    if (!confirmar) return;
+    const item = inventario[index];
+    inventario.splice(index, 1);
+    renderizarInventario();
+    if (modoNube) {
+        const { error } = await supabaseClient.from('alimentos').delete().eq('id', item.id);
+        if (error) console.error('Error eliminando:', error.message);
+    } else {
+        guardarInventarioEnMemoria();
+    }
+}
 
-            const item = inventario[index];
-            inventario.splice(index, 1);
-            renderizarInventario();
-
-            if (modoNube) {
-                const { error } = await supabaseClient.from('alimentos').delete().eq('id', item.id);
-                if (error) console.error('Error eliminando en la nube:', error.message);
-            } else {
-                guardarInventarioEnMemoria();
-            }
-        }
-
-     async function agregarAlimento() {
-    const btn = document.querySelector('.btn-submit');
+async function agregarAlimento() {
+    const btn = document.getElementById('btn-confirmar');
     const nombreInput = document.getElementById('nuevo-nombre');
     const ubicacionSelect = document.getElementById('nueva-ubicacion');
     const unidadSelect = document.getElementById('nueva-unidad');
     const vencimientoInput = document.getElementById('nuevo-vencimiento');
-    
+
     const nombreLimpio = nombreInput.value.trim();
     if (!nombreLimpio) return;
 
     btn.innerText = '✅ Guardado!';
     btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+    btn.disabled = true;
 
     const nombreBusqueda = nombreLimpio.toLowerCase();
-    const productoExistente = inventario.find(item => 
-        item.nombre.toLowerCase() === nombreBusqueda && 
+    const productoExistente = inventario.find(item =>
+        item.nombre.toLowerCase() === nombreBusqueda &&
         item.ubicacion === ubicacionSelect.value
     );
 
@@ -469,42 +432,30 @@ async function cambiarCantidad(index, cambio) {
         unidadFinal = 'Unidad';
     }
     const vencimientoFinal = vencimientoInput.value || null;
-    
+
     if (productoExistente) {
         const nuevaCantidad = productoExistente.cantidad + cantidadFinal;
         productoExistente.cantidad = nuevaCantidad;
         if (modoNube) {
-            const { error } = await supabaseClient
-                .from('alimentos')
-                .update({ cantidad: nuevaCantidad })
-                .eq('id', productoExistente.id);
-            if (error) console.error('Error actualizando en la nube:', error.message);
+            await supabaseClient.from('alimentos').update({ cantidad: nuevaCantidad }).eq('id', productoExistente.id);
         } else {
             guardarInventarioEnMemoria();
         }
     } else {
         if (modoNube) {
-            const { data, error } = await supabaseClient
-                .from('alimentos')
-                .insert({
-                    user_id: usuarioActual.id,
-                    nombre: nombreLimpio,
-                    cantidad: cantidadFinal,
-                    ubicacion: ubicacionSelect.value,
-                    unidad: unidadFinal,
-                    vencimiento: vencimientoFinal
-                })
-                .select()
-                .single();
-            if (error) {
-                console.error('Error guardando en la nube:', error.message);
-            } else {
-                inventario.push(mapearFilaSupabase(data));
-            }
+            const { data, error } = await supabaseClient.from('alimentos').insert({
+                user_id: usuarioActual.id,
+                nombre: nombreLimpio,
+                cantidad: cantidadFinal,
+                ubicacion: ubicacionSelect.value,
+                unidad: unidadFinal,
+                vencimiento: vencimientoFinal
+            }).select().single();
+            if (!error) inventario.push(mapearFilaSupabase(data));
         } else {
-            inventario.push({ 
-                nombre: nombreLimpio, 
-                cantidad: cantidadFinal, 
+            inventario.push({
+                nombre: nombreLimpio,
+                cantidad: cantidadFinal,
                 ubicacion: ubicacionSelect.value,
                 unidad: unidadFinal,
                 vencimiento: vencimientoFinal
@@ -514,6 +465,12 @@ async function cambiarCantidad(index, cambio) {
     }
 
     filtroActual = ubicacionSelect.value;
+    ['heladera', 'alacena', 'despensa'].forEach(u => {
+        document.getElementById(`chip-${u}`).className = u === filtroActual ? `chip active-${u}` : "chip";
+    });
+    document.getElementById('subtitulo-seccion').innerText = `Stock • ${filtroActual.toUpperCase()}`;
+    renderizarInventario();
+
     nombreInput.value = '';
     vencimientoInput.value = '';
     cantidadModalActual = 1;
@@ -522,121 +479,100 @@ async function cambiarCantidad(index, cambio) {
     setTimeout(() => {
         btn.innerText = 'Confirmar Guardado';
         btn.style.background = '';
+        btn.disabled = false;
         cerrarModalAgregar();
-        renderizarInventario();
-    }, 800);
+    }, 700);
 }
 
-        async function generarRecetasConIA() {
-            const btn = document.getElementById('btn-ia');
-            const contenedor = document.getElementById('contenedor-recetas');
-            const resultadoTexto = document.getElementById('resultado-texto');
-
-            btn.innerText = "🤖 Cocinando ideas...";
-            btn.disabled = true;
-            contenedor.classList.remove('hidden');
-            resultadoTexto.innerHTML = `<span class="pulse-text">Consultando de forma directa con Google Gemini...</span>`;
-
-            const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
-            
-            if (disponibles.length === 0) {
-                resultadoTexto.innerHTML = "❌ No hay ingredientes en stock para cocinar.";
-                btn.innerText = "✨ Sugerir Menú de Cocina";
-                btn.disabled = false;
-                return;
-            }
-
-            const listaTexto = disponibles.join(", ");
-
-            try {
-                const response = await fetch('/api/receta', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ingredientes: listaTexto })
-                });
-                
-                const data = await response.json();
-                
-                if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
-                    let texto = data.candidates[0].content.parts[0].text;
-                    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    resultadoTexto.innerHTML = texto;
-                } else if (data.error) {
-                    resultadoTexto.innerHTML = `❌ Error: ${data.error}`;
-                } else {
-                    resultadoTexto.innerHTML = "❌ Formato incompatible recibido de la IA.";
-                }
-            } catch (error) {
-                console.error(error);
-                resultadoTexto.innerHTML = "❌ Error al conectar con el servidor.";
-            } finally {
-                btn.innerText = "✨ Sugerir Menú de Cocina";
-                btn.disabled = false;
-            }
-        }
-
-// Iniciar sesión con un clic usando Google
-async function ingresarConGoogle() {
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: window.location.origin
+async function generarRecetasConIA() {
+    const btn = document.getElementById('btn-ia');
+    const contenedor = document.getElementById('contenedor-recetas');
+    const resultadoTexto = document.getElementById('resultado-texto');
+    btn.innerText = "🤖 Cocinando ideas...";
+    btn.disabled = true;
+    contenedor.classList.remove('hidden');
+    resultadoTexto.innerHTML = `<span class="pulse-text">Consultando con Google Gemini...</span>`;
+    const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
+    if (disponibles.length === 0) {
+        resultadoTexto.innerHTML = "❌ No hay ingredientes en stock para cocinar.";
+        btn.innerText = "✨ Sugerir Menú de Cocina";
+        btn.disabled = false;
+        return;
     }
-  });
-  if (error) console.error("Error:", error.message);
+    try {
+        const response = await fetch('/api/receta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ingredientes: disponibles.join(", ") })
+        });
+        const data = await response.json();
+        if (data?.candidates?.[0]?.content?.parts?.[0]) {
+            let texto = data.candidates[0].content.parts[0].text;
+            texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            resultadoTexto.innerHTML = texto;
+        } else if (data.error) {
+            resultadoTexto.innerHTML = `❌ Error: ${data.error}`;
+        } else {
+            resultadoTexto.innerHTML = "❌ Formato incompatible recibido.";
+        }
+    } catch (error) {
+        resultadoTexto.innerHTML = "❌ Error al conectar con el servidor.";
+    } finally {
+        btn.innerText = "✨ Sugerir Menú de Cocina";
+        btn.disabled = false;
+    }
 }
 
-// Cerrar sesión
-async function cerrarSesion() {
-  await supabaseClient.auth.signOut();
-  usuarioActual = null;
-  actualizarUISesion();
-  await cargarInventario();
-}
-
-// Verificar si hay alguien conectado al abrir la app, y cargar los datos correctos
-async function verificarSesion() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-const user = session?.user || null;
-usuarioActual = user;
-  actualizarUISesion();
-  await cargarInventario();
-  cargaInicialHecha = true;
-}
-
-// Refleja el estado de sesión en el badge del header
-function actualizarUISesion() {
-  const badge = document.getElementById('badge-sesion');
-  if (usuarioActual) {
-    badge.innerHTML = `<span class="badge-dot"></span>${usuarioActual.email}`;
-    badge.onclick = cerrarSesion;
-    badge.title = "Tocá para cerrar sesión";
-  } else {
-    badge.innerHTML = `Iniciar sesión con Google`;
-    badge.onclick = ingresarConGoogle;
-    badge.title = "";
-  }
-}
-
-// Ejecutar automáticamente al cargar la página (carga inicial única)
-document.addEventListener("DOMContentLoaded", verificarSesion);
-
-// Reacciona si el login se completa después de volver de Google, o si se cierra sesión
-supabaseClient.auth.onAuthStateChange((_event, session) => {
-  usuarioActual = session ? session.user : null;
-  actualizarUISesion();
-  // Evitamos recargar dos veces en el arranque: la carga inicial ya la hace verificarSesion()
-  if (cargaInicialHecha) {
-    cargarInventario();
-  }
-});
-// Registrar el Service Worker (requisito para que la app cuente como PWA válida)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((error) => {
-      console.error('Error registrando el Service Worker:', error);
+async function ingresarConGoogle() {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin }
     });
-  });
+    if (error) console.error("Error:", error.message);
+}
+
+async function cerrarSesion() {
+    await supabaseClient.auth.signOut();
+    usuarioActual = null;
+    actualizarUISesion();
+    await cargarInventario();
+}
+
+async function verificarSesion() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    usuarioActual = session?.user || null;
+    actualizarUISesion();
+    await cargarInventario();
+    cargaInicialHecha = true;
+}
+
+function actualizarUISesion() {
+    const badge = document.getElementById('badge-sesion');
+    if (usuarioActual) {
+        badge.innerHTML = `<span class="badge-dot"></span>${usuarioActual.email}`;
+        badge.onclick = cerrarSesion;
+    } else {
+        badge.innerHTML = `Iniciar sesión con Google`;
+        badge.onclick = ingresarConGoogle;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Adjuntar evento al botón confirmar
+    document.getElementById('btn-confirmar').addEventListener('click', agregarAlimento);
+    verificarSesion();
+});
+
+supabaseClient.auth.onAuthStateChange((_event, session) => {
+    usuarioActual = session?.user || null;
+    actualizarUISesion();
+    if (cargaInicialHecha) cargarInventario();
+});
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(e => console.error('SW error:', e));
+    });
 }
     </script>
 </body>
