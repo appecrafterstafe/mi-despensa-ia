@@ -207,7 +207,7 @@ const stockPredeterminado = [
 ];
 
 function cargarInventoryDeMemoria() {
-    const datosGuardados = localStorage.getItem("almacen_familiar_stock");
+    const datosGuardados = storageSeguro.getItem("almacen_familiar_stock");
     if (datosGuardados) {
         inventario = JSON.parse(datosGuardados);
     } else {
@@ -217,7 +217,7 @@ function cargarInventoryDeMemoria() {
 }
 
 function guardarInventarioEnMemoria() {
-    localStorage.setItem("almacen_familiar_stock", JSON.stringify(inventario));
+    storageSeguro.setItem("almacen_familiar_stock", JSON.stringify(inventario));
 }
 
 async function cargarInventario() {
