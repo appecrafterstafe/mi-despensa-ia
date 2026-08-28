@@ -596,12 +596,12 @@ async function cerrarSesion() {
 
 // Verificar si hay alguien conectado al abrir la app, y cargar los datos correctos
 async function verificarSesion() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    const user = session?.user || null;
-    usuarioActual = user;
-    actualizarUISesion();
-    await cargarInventario();
-    cargaInicialHecha = true;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+const user = session?.user || null;
+usuarioActual = user;
+  actualizarUISesion();
+  await cargarInventario();
+  cargaInicialHecha = true;
 }
 
 // Refleja el estado de sesión en el badge del header
@@ -619,25 +619,16 @@ function actualizarUISesion() {
 }
 
 // Ejecutar automáticamente al cargar la página (carga inicial única)
-document.addEventListener("DOMContentLoaded", async () => {
-    // Primero intentar recuperar sesión existente
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session) {
-        usuarioActual = session.user;
-        actualizarUISesion();
-        await cargarInventario();
-    } else {
-        await verificarSesion();
-    }
-    cargaInicialHecha = true;
-});
+document.addEventListener("DOMContentLoaded", verificarSesion);
 
+// Reacciona si el login se completa después de volver de Google, o si se cierra sesión
 supabaseClient.auth.onAuthStateChange((_event, session) => {
-    usuarioActual = session ? session.user : null;
-    actualizarUISesion();
-    if (cargaInicialHecha) {
-        cargarInventario();
-    }
+  usuarioActual = session ? session.user : null;
+  actualizarUISesion();
+  // Evitamos recargar dos veces en el arranque: la carga inicial ya la hace verificarSesion()
+  if (cargaInicialHecha) {
+    cargarInventario();
+  }
 });
 // Registrar el Service Worker (requisito para que la app cuente como PWA válida)
 if ('serviceWorker' in navigator) {
