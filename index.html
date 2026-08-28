@@ -78,13 +78,16 @@
     </style>
 </head>
 <body>
-    <header>
-        <div>
-            <h1>🏡 Almacén <span style="font-size:10px;opacity:0.4">v2.1</span></h1>
-            <p id="subtitulo-seccion">Stock • Heladera</p>
-        </div>
-        <button id="badge-sesion" class="badge-online">Iniciar sesión con Google</button>
-    </header>
+   <header>
+    <div>
+        <h1>🏡 Almacén <span style="font-size:10px;opacity:0.4">v2.1</span></h1>
+        <p id="subtitulo-seccion">Stock • Heladera</p>
+    </div>
+    <button id="badge-sesion" class="badge-online">Iniciar sesión con Google</button>
+</header>
+<div id="aviso-sin-sesion" class="hidden" style="background:#fef3c7;color:#92400e;padding:10px 16px;font-size:12px;font-weight:700;text-align:center;">
+    ⚠️ Sin iniciar sesión, tu stock no se guarda al cerrar la app. Iniciá sesión con Google para guardarlo.
+</div>
 
     <main>
         <div id="vista-inventario">
@@ -562,12 +565,15 @@ async function verificarSesion() {
 
 function actualizarUISesion() {
     const badge = document.getElementById('badge-sesion');
+    const aviso = document.getElementById('aviso-sin-sesion'); // nuevo
     if (usuarioActual) {
         badge.innerHTML = `<span class="badge-dot"></span>${usuarioActual.email}`;
         badge.onclick = cerrarSesion;
+        aviso.classList.add('hidden'); // nuevo
     } else {
         badge.innerHTML = `Iniciar sesión con Google`;
         badge.onclick = ingresarConGoogle;
+        aviso.classList.remove('hidden'); // nuevo
     }
 }
 
