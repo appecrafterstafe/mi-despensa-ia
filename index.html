@@ -435,99 +435,89 @@ async function cambiarCantidad(index, cambio) {
             }
         }
 
-        async function agregarAlimento() {
+     async function agregarAlimento() {
     const btn = document.querySelector('.btn-submit');
+    const nombreInput = document.getElementById('nuevo-nombre');
+    const ubicacionSelect = document.getElementById('nueva-ubicacion');
+    const unidadSelect = document.getElementById('nueva-unidad');
+    const vencimientoInput = document.getElementById('nuevo-vencimiento');
+    
+    const nombreLimpio = nombreInput.value.trim();
+    if (!nombreLimpio) return;
+
     btn.innerText = '✅ Guardado!';
     btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
-            const nombreInput = document.getElementById('nuevo-nombre');
-            const ubicacionSelect = document.getElementById('nueva-ubicacion');
-            const unidadSelect = document.getElementById('nueva-unidad');
-            const vencimientoInput = document.getElementById('nuevo-vencimiento');
-            
-            const nombreLimpio = nombreInput.value.trim();
-            if (!nombreLimpio) return;
-            
-            const nombreBusqueda = nombreLimpio.toLowerCase();
-            const productoExistente = inventario.find(item => 
-                item.nombre.toLowerCase() === nombreBusqueda && 
-                item.ubicacion === ubicacionSelect.value
-            );
 
-            // La Docena es un multiplicador al cargar: "1 Docena" se guarda como 12 unidades sueltas
-            let cantidadFinal = cantidadModalActual;
-            let unidadFinal = unidadSelect.value;
-            if (unidadSelect.value === 'Docena') {
-                cantidadFinal = cantidadModalActual * 12;
-                unidadFinal = 'Unidad';
-            }
-            const vencimientoFinal = vencimientoInput.value || null;
-            
-            if (productoExistente) {
-                const nuevaCantidad = productoExistente.cantidad + cantidadFinal;
-                productoExistente.cantidad = nuevaCantidad;
+    const nombreBusqueda = nombreLimpio.toLowerCase();
+    const productoExistente = inventario.find(item => 
+        item.nombre.toLowerCase() === nombreBusqueda && 
+        item.ubicacion === ubicacionSelect.value
+    );
 
-                if (modoNube) {
-                    const { error } = await supabaseClient
-                        .from('alimentos')
-                        .update({ cantidad: nuevaCantidad })
-                        .eq('id', productoExistente.id);
-                    if (error) console.error('Error actualizando en la nube:', error.message);
-                } else {
-                    guardarInventarioEnMemoria();
-                }
-            } else {
-                if (modoNube) {
-                    const { data, error } = await supabaseClient
-                        .from('alimentos')
-                        .insert({
-                            user_id: usuarioActual.id,
-                            nombre: nombreLimpio,
-                            cantidad: cantidadFinal,
-                            ubicacion: ubicacionSelect.value,
-                            unidad: unidadFinal,
-                            vencimiento: vencimientoFinal
-                        })
-                        .select()
-                        .single();
-
-                    if (error) {
-                        console.error('Error guardando en la nube:', error.message);
-                    } else {
-                        inventario.push(mapearFilaSupabase(data));
-                    }
-                } else {
-                    inventario.push({ 
-                        nombre: nombreLimpio, 
-                        cantidad: cantidadFinal, 
-                        ubicacion: ubicacionSelect.value,
-                        unidad: unidadFinal,
-                        vencimiento: vencimientoFinal
-                    });
-                    guardarInventarioEnMemoria();
-                }
-            }
-            
-            filtroActual = ubicacionSelect.value;
-['heladera', 'alacena', 'despensa'].forEach(u => {
-    const btn = document.getElementById(`chip-${u}`);
-    btn.className = u === ubicacionSelect.value ? `chip active-${u}` : "chip";
-});
-document.getElementById('subtitulo-seccion').innerText = `Stock • ${ubicacionSelect.value.toUpperCase()}`;
-renderizarInventario();
-            
-            nombreInput.value = '';
-            vencimientoInput.value = '';
-            cantidadModalActual = 1;
-            document.getElementById('modal-cantidad-valor').value = '1';
-            
-           cerrarModalAgregar();
-setTimeout(() => {
-    btn.innerText = 'Confirmar Guardado';
-    btn.style.background = '';
-    cerrarModalAgregar();
-    renderizarInventario();
-}, 800);
+    let cantidadFinal = cantidadModalActual;
+    let unidadFinal = unidadSelect.value;
+    if (unidadSelect.value === 'Docena') {
+        cantidadFinal = cantidadModalActual * 12;
+        unidadFinal = 'Unidad';
+    }
+    const vencimientoFinal = vencimientoInput.value || null;
+    
+    if (productoExistente) {
+        const nuevaCantidad = productoExistente.cantidad + cantidadFinal;
+        productoExistente.cantidad = nuevaCantidad;
+        if (modoNube) {
+            const { error } = await supabaseClient
+                .from('alimentos')
+                .update({ cantidad: nuevaCantidad })
+                .eq('id', productoExistente.id);
+            if (error) console.error('Error actualizando en la nube:', error.message);
+        } else {
+            guardarInventarioEnMemoria();
         }
+    } else {
+        if (modoNube) {
+            const { data, error } = await supabaseClient
+                .from('alimentos')
+                .insert({
+                    user_id: usuarioActual.id,
+                    nombre: nombreLimpio,
+                    cantidad: cantidadFinal,
+                    ubicacion: ubicacionSelect.value,
+                    unidad: unidadFinal,
+                    vencimiento: vencimientoFinal
+                })
+                .select()
+                .single();
+            if (error) {
+                console.error('Error guardando en la nube:', error.message);
+            } else {
+                inventario.push(mapearFilaSupabase(data));
+            }
+        } else {
+            inventario.push({ 
+                nombre: nombreLimpio, 
+                cantidad: cantidadFinal, 
+                ubicacion: ubicacionSelect.value,
+                unidad: unidadFinal,
+                vencimiento: vencimientoFinal
+            });
+            guardarInventarioEnMemoria();
+        }
+    }
+
+    filtroActual = ubicacionSelect.value;
+    nombreInput.value = '';
+    vencimientoInput.value = '';
+    cantidadModalActual = 1;
+    document.getElementById('modal-cantidad-valor').value = '1';
+
+    setTimeout(() => {
+        btn.innerText = 'Confirmar Guardado';
+        btn.style.background = '';
+        cerrarModalAgregar();
+        renderizarInventario();
+    }, 800);
+}
 
         async function generarRecetasConIA() {
             const btn = document.getElementById('btn-ia');
