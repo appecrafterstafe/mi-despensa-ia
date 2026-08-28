@@ -504,7 +504,13 @@ async function cambiarCantidad(index, cambio) {
                 }
             }
             
-            cambiarFiltroUbicacion(ubicacionSelect.value);
+            filtroActual = ubicacionSelect.value;
+['heladera', 'alacena', 'despensa'].forEach(u => {
+    const btn = document.getElementById(`chip-${u}`);
+    btn.className = u === ubicacionSelect.value ? `chip active-${u}` : "chip";
+});
+document.getElementById('subtitulo-seccion').innerText = `Stock • ${ubicacionSelect.value.toUpperCase()}`;
+renderizarInventario();
             
             nombreInput.value = '';
             vencimientoInput.value = '';
