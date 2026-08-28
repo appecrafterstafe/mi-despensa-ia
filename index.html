@@ -605,17 +605,11 @@ async function generarRecetasConIA(esEspecifico) {
 }
 
 async function ingresarConGoogle() {
-    try {
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: window.location.origin }
-        });
-        if (error) {
-            alert("Error de Supabase: " + error.message);
-        }
-    } catch (e) {
-        alert("Error inesperado: " + e.message);
-    }
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin }
+    });
+    if (error) console.error("Error:", error.message);
 }
 
 async function cerrarSesion() {
@@ -626,8 +620,16 @@ async function cerrarSesion() {
 }
 
 async function verificarSesion() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    usuarioActual = session?.user || null;
+    try {
+        const resultado = await Promise.race([
+            supabaseClient.auth.getSession(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000))
+        ]);
+        usuarioActual = resultado?.data?.session?.user || null;
+    } catch (e) {
+        console.warn('No se pudo verificar la sesión a tiempo:', e.message);
+        usuarioActual = null;
+    }
     actualizarUISesion();
     await cargarInventario();
     cargaInicialHecha = true;
