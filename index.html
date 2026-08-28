@@ -187,7 +187,17 @@ try {
         removeItem: (key) => { delete memoria[key]; }
     };
 }
-
+document.addEventListener("DOMContentLoaded", () => {
+    const aviso = document.createElement('div');
+    aviso.style.cssText = "position:fixed;top:0;left:0;right:0;background:blue;color:white;padding:10px;z-index:9999;font-weight:bold;text-align:center;font-size:13px;";
+    if (window.indexedDB) {
+        aviso.innerText = "✅ IndexedDB EXISTE en este navegador";
+    } else {
+        aviso.innerText = "❌ IndexedDB NO EXISTE en este navegador";
+    }
+    document.body.appendChild(aviso);
+});
+        
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: {
         persistSession: true,
