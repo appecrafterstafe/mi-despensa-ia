@@ -666,6 +666,13 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(e => console.error('SW error:', e));
     });
 }
+        window.addEventListener('load', () => {
+    if (window.location.hash.includes('access_token') || window.location.search.includes('code=')) {
+        alert("URL de retorno detectada: " + window.location.href.substring(0, 200));
+    } else {
+        alert("Sin token en la URL al cargar. URL actual: " + window.location.href.substring(0, 100));
+    }
+});
     </script>
 </body>
 </html>
