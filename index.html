@@ -637,6 +637,9 @@ function actualizarUISesion() {
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('btn-confirmar').addEventListener('click', agregarAlimento);
+    document.getElementById('badge-sesion').onclick = ingresarConGoogle;
+    cargarInventoryDeMemoria();
+    renderizarInventario();
 });
 
 supabaseClient.auth.onAuthStateChange((_event, session) => {
