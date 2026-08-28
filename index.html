@@ -619,21 +619,7 @@ async function cerrarSesion() {
     await cargarInventario();
 }
 
-async function verificarSesion() {
-    try {
-        const resultado = await Promise.race([
-            supabaseClient.auth.getSession(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000))
-        ]);
-        usuarioActual = resultado?.data?.session?.user || null;
-    } catch (e) {
-        console.warn('No se pudo verificar la sesión a tiempo:', e.message);
-        usuarioActual = null;
-    }
-    actualizarUISesion();
-    await cargarInventario();
-    cargaInicialHecha = true;
-}
+
 
 function actualizarUISesion() {
     const badge = document.getElementById('badge-sesion');
@@ -650,15 +636,14 @@ function actualizarUISesion() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Adjuntar evento al botón confirmar
     document.getElementById('btn-confirmar').addEventListener('click', agregarAlimento);
-    verificarSesion();
 });
 
 supabaseClient.auth.onAuthStateChange((_event, session) => {
     usuarioActual = session?.user || null;
     actualizarUISesion();
-    if (cargaInicialHecha) cargarInventario();
+    cargarInventario();
+    cargaInicialHecha = true;
 });
 
 if ('serviceWorker' in navigator) {
