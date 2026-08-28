@@ -436,6 +436,9 @@ async function cambiarCantidad(index, cambio) {
         }
 
         async function agregarAlimento() {
+    const btn = document.querySelector('.btn-submit');
+    btn.innerText = '✅ Guardado!';
+    btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
             const nombreInput = document.getElementById('nuevo-nombre');
             const ubicacionSelect = document.getElementById('nueva-ubicacion');
             const unidadSelect = document.getElementById('nueva-unidad');
@@ -519,8 +522,11 @@ renderizarInventario();
             
            cerrarModalAgregar();
 setTimeout(() => {
+    btn.innerText = 'Confirmar Guardado';
+    btn.style.background = '';
+    cerrarModalAgregar();
     renderizarInventario();
-}, 100);
+}, 800);
         }
 
         async function generarRecetasConIA() {
