@@ -619,11 +619,632 @@ async function cerrarSesion() {
     await cargarInventario();
 }
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Almacén Familiar</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="theme-color" content="#1e1b4b">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; min-height: 100vh; flex-direction: column; display: flex; padding-bottom: 90px; overscroll-behavior-y: contain; -webkit-tap-highlight-color: transparent; }
+        header { background: linear-gradient(135deg, #0f172a, #1e1b4b); padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 2px solid rgba(99, 102, 241, 0.2); color: white; }
+        header h1 { font-size: 22px; font-weight: 900; }
+        header p { font-size: 11px; color: #a5b4fc; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+        .badge-online { font-size: 11px; background: rgba(52, 211, 153, 0.2); color: #34d399; font-weight: 700; padding: 6px 12px; border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 20px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .badge-dot { width: 8px; height: 8px; background-color: #34d399; border-radius: 50%; display: inline-block; }
+        main { flex: 1; width: 100%; max-width: 500px; margin: 0 auto; padding: 16px; }
+        .hidden { display: none !important; }
+        .chips-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; }
+        .chip { padding: 12px 22px; border-radius: 16px; font-size: 13px; font-weight: 800; border: 1px solid #e2e8f0; background-color: white; color: #475569; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .chip.active-heladera { background-color: #2563eb; color: white; border-color: #3b82f6; transform: scale(1.02); box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2); }
+        .chip.active-alacena { background-color: #d97706; color: white; border-color: #f59e0b; transform: scale(1.02); box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2); }
+        .chip.active-despensa { background-color: #059669; color: white; border-color: #10b981; transform: scale(1.02); box-shadow: 0 4px 8px rgba(5, 150, 105, 0.2); }
+        .items-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        .product-card { background-color: white; padding: 16px; border-radius: 22px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); border-bottom: 3px solid #e2e8f0; }
+        .product-name { font-size: 15px; font-weight: 700; color: #0f172a; }
+        .product-info { display: flex; flex-direction: column; gap: 5px; }
+        .product-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .unidad-tag { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+        .venc-badge { font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 10px; border: 1px solid transparent; }
+        .venc-ok { background-color: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+        .venc-proximo { background-color: #fffbeb; color: #b45309; border-color: #fde68a; }
+        .venc-vencido { background-color: #fef2f2; color: #dc2626; border-color: #fecaca; }
+        .controls-wrapper { display: flex; align-items: center; gap: 14px; }
+        .btn-counter { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #cbd5e1; background-color: #f8fafc; color: #1e293b; font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.1s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn-counter:active { transform: scale(0.85); background-color: #e2e8f0; }
+        .count-badge { font-size: 14px; font-weight: 900; padding: 6px 16px; border-radius: 20px; min-width: 48px; text-align: center; border: 1px solid transparent; }
+        .count-heladera { background-color: #eff6ff; color: #1d4ed8; border-color: #dbeafe; }
+        .count-alacena { background-color: #fffbeb; color: #b45309; border-color: #fef3c7; }
+        .count-despensa { background-color: #ecfdf5; color: #047857; border-color: #d1fae5; }
+        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; font-size: 14px; font-weight: 700; background: white; border-radius: 24px; border: 2px dashed #cbd5e1; }
+        .chef-card { background: linear-gradient(135deg, #1e1b4b, #0f172a); border-radius: 24px; padding: 24px; color: white; border: 1px solid #312e81; box-shadow: 0 10px 20px rgba(0,0,0,0.15); margin-bottom: 20px; }
+        .chef-card h2 { font-size: 20px; font-weight: 800; color: #c7d2fe; }
+        .chef-card p { font-size: 12px; color: #cbd5e1; margin-top: 8px; line-height: 1.6; }
+        .btn-ia { width: 100%; margin-top: 18px; background: linear-gradient(90deg, #f97316, #f59e0b); border: none; padding: 16px; border-radius: 16px; color: white; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); }
+        .btn-ia:active { transform: scale(0.97); }
+        .output-box { background-color: white; border-radius: 24px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .output-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .output-content { font-size: 13px; color: #475569; line-height: 1.7; white-space: pre-line; font-weight: 500; }
+        .fab-android { position: fixed; bottom: 100px; right: 20px; width: 62px; height: 62px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; border: none; border-radius: 20px; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4); display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; transition: all 0.2s ease; z-index: 50; }
+        .fab-android:active { transform: scale(0.9); }
+        nav { position: fixed; bottom: 0; left: 0; right: 0; height: 76px; background-color: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05); padding: 0 16px; z-index: 40; }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 56px; border-radius: 18px; border: none; background: transparent; color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; }
+        .nav-btn .icon { font-size: 24px; margin-bottom: 3px; }
+        .nav-btn.active { color: #4f46e5; background-color: #e0e7ff; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.55); backdrop-filter: blur(5px); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
+        .modal-sheet { background-color: white; width: 100%; max-width: 500px; border-radius: 28px 28px 0 0; padding: 24px 24px 34px 24px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 18px; }
+        .modal-header h3 { font-size: 19px; font-weight: 900; color: #0f172a; }
+        .btn-close { width: 34px; height: 34px; border-radius: 50%; background-color: #f1f5f9; border: none; font-weight: 800; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { font-size: 11px; font-weight: 900; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 6px; }
+        .form-control { width: 100%; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; font-size: 14px; font-weight: 600; color: #1e293b; outline: none; transition: all 0.2s ease; }
+        .form-control:focus { border-color: #4f46e5; background-color: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .modal-counter-wrapper { display: flex; align-items: center; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 4px; justify-content: space-between; }
+        .modal-counter-btn { width: 44px; height: 44px; border-radius: 10px; border: none; background-color: white; color: #1e293b; font-size: 20px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .modal-counter-btn:active { background-color: #e2e8f0; transform: scale(0.95); }
+        .modal-counter-value { font-size: 16px; font-weight: 900; color: #0f172a; text-align: center; flex: 1; border: none; background: transparent; outline: none; -moz-appearance: textfield; }
+        .modal-counter-value::-webkit-outer-spin-button, .modal-counter-value::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .btn-submit { width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: none; padding: 16px; border-radius: 14px; color: white; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); touch-action: manipulation; }
+        .pulse-text { color: #f97316; font-weight: 700; animation: pulse 1.5s infinite; font-size: 13px; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .btn-delete { width: 38px; height: 38px; border-radius: 12px; border: 1px solid #fee2e2; background-color: #fef2f2; color: #ef4444; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease; margin-left: 4px; }
+        .btn-delete:active { transform: scale(0.85); background-color: #fca5a5; }
+    </style>
+</head>
+<body>
+   <header>
+    <div>
+        <h1>🏡 Almacén <span style="font-size:10px;opacity:0.4">v2.1</span></h1>
+        <p id="subtitulo-seccion">Stock • Heladera</p>
+    </div>
+    <button id="badge-sesion" class="badge-online">Iniciar sesión con Google</button>
+</header>
+<div id="aviso-sin-sesion" class="hidden" style="background:#fef3c7;color:#92400e;padding:10px 16px;font-size:12px;font-weight:700;text-align:center;">
+    ⚠️ Sin iniciar sesión, tu stock no se guarda al cerrar la app. Iniciá sesión con Google para guardarlo.
+</div>
+
+    <main>
+        <div id="vista-inventario">
+            <div class="chips-container">
+                <button onclick="cambiarFiltroUbicacion('heladera')" id="chip-heladera" class="chip active-heladera">❄️ Heladera</button>
+                <button onclick="cambiarFiltroUbicacion('alacena')" id="chip-alacena" class="chip">🥖 Alacena</button>
+                <button onclick="cambiarFiltroUbicacion('despensa')" id="chip-despensa" class="chip">📦 Despensa</button>
+            </div>
+            <ul id="lista-productos-movil" class="items-list"></ul>
+        </div>
+
+        <div id="vista-chef" class="hidden">
+    <div class="chef-card">
+        <h2>🤖 Chef Inteligente IA</h2>
+        <p>La IA analizará tu stock guardado de forma directa en tu dispositivo para sugerirte platos instantáneos.</p>
+        <button id="btn-ia" onclick="generarRecetasConIA()" class="btn-ia">✨ Sugerir Menú de Cocina</button>
+
+        <div class="form-group" style="margin-top:18px;">
+            <label style="color:#c7d2fe;">¿Querés una receta específica?</label>
+            <input id="pedido-especifico" type="text" placeholder="Ej. Quiero preparar un turrón de quaker" class="form-control">
+        </div>
+        <button id="btn-ia-especifico" onclick="generarRecetasConIA(true)" class="btn-ia" style="background: linear-gradient(90deg, #4f46e5, #7c3aed);">🔍 Buscar esa Receta</button>
+    </div>
+    <div id="contenedor-recetas" class="output-box hidden">
+        <h3 class="output-title">🍽️ Sugerencias Exclusivas:</h3>
+        <div id="resultado-texto" class="output-content"></div>
+    </div>
+</div>
+    </main>
+
+    <button onclick="abrirModalAgregar()" id="fab-android" class="fab-android">+</button>
+
+    <nav>
+        <button onclick="navegarA('inventario')" id="nav-inventario" class="nav-btn active"><span class="icon">📦</span><span>Mi Stock</span></button>
+        <button onclick="navegarA('chef')" id="nav-chef" class="nav-btn"><span class="icon">🍳</span><span>Chef IA</span></button>
+    </nav>
+
+    <div id="modal-agregar" class="modal-overlay hidden" onclick="cerrarModalPorClicAfuera(event)">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <h3>Añadir al Almacén</h3>
+                <button onclick="cerrarModalAgregar()" class="btn-close">✕</button>
+            </div>
+            <div class="form-group">
+                <label>Nombre del Alimento</label>
+                <input id="nuevo-nombre" type="text" placeholder="Ej. Leche entera, Huevos..." class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Cantidad Inicial</label>
+                <div class="modal-counter-wrapper">
+                    <button type="button" onclick="modificarCantidadModal(-1)" class="modal-counter-btn">-</button>
+                    <input id="modal-cantidad-valor" class="modal-counter-value" type="number" min="1" value="1" inputmode="numeric" onfocus="this.select()" onchange="fijarCantidadModal(this.value)">
+                    <button type="button" onclick="modificarCantidadModal(1)" class="modal-counter-btn">+</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Unidad de Medida</label>
+                <select id="nueva-unidad" class="form-control">
+                    <option value="Unidad">Unidad</option>
+                    <option value="Paquete">Paquete</option>
+                    <option value="Litro">Litro</option>
+                    <option value="Kilo">Kilo</option>
+                    <option value="Gramo">Gramo</option>
+                    <option value="Docena">Docena</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha de Vencimiento (opcional)</label>
+                <input id="nuevo-vencimiento" type="date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Ubicación de Guardado</label>
+                <select id="nueva-ubicacion" class="form-control">
+                    <option value="heladera">❄️ Heladera</option>
+                    <option value="alacena">🥖 Alacena</option>
+                    <option value="despensa">📦 Despensa</option>
+                </select>
+            </div>
+            <button id="btn-confirmar" class="btn-submit">Confirmar Guardado</button>
+        </div>
+    </div>
+
+    <script>
+const SUPABASE_URL = "https://ienlcmxasdlhmrkrqkci.supabase.co";
+const SUPABASE_KEY = "sb_publishable_IbpLwe16Y6XA85CkPX53Cg_Re9rbRBz";
+
+function crearStorageIndexedDB() {
+    const DB_NAME = 'almacen-storage-db';
+    const STORE_NAME = 'keyval';
+
+    function abrirDB() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = () => {
+                req.result.createObjectStore(STORE_NAME);
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    return {
+        getItem: async (key) => {
+            const db = await abrirDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const req = tx.objectStore(STORE_NAME).get(key);
+                req.onsuccess = () => resolve(req.result ?? null);
+                req.onerror = () => reject(req.error);
+            });
+        },
+        setItem: async (key, value) => {
+            const db = await abrirDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                tx.objectStore(STORE_NAME).put(value, key);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        },
+        removeItem: async (key) => {
+            const db = await abrirDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                tx.objectStore(STORE_NAME).delete(key);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+    };
+}
+
+let storageSeguro;
+try {
+    storageSeguro = window.localStorage;
+    storageSeguro.getItem('test');
+} catch (e) {
+    console.warn('localStorage no disponible, usando IndexedDB', e);
+    storageSeguro = crearStorageIndexedDB();
+}
+        
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+        persistSession: true,
+        storageKey: 'almacen-auth',
+        storage: storageSeguro,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+    }
+});
+
+let usuarioActual = null;
+let modoNube = false;
+let cargaInicialHecha = false;
+let filtroActual = "heladera";
+let vistaActual = "inventario";
+let inventario = [];
+let cantidadModalActual = 1;
+
+const stockPredeterminado = [
+    { nombre: "🥚 Huevos", cantidad: 6, ubicacion: "heladera", unidad: "Unidad" },
+    { nombre: "🥛 Leche", cantidad: 1, ubicacion: "heladera", unidad: "Litro" },
+    { nombre: "🧅 Cebolla", cantidad: 3, ubicacion: "heladera", unidad: "Unidad" },
+    { nombre: "🌾 Arroz", cantidad: 1, ubicacion: "alacena", unidad: "Kilo" },
+    { nombre: "🍝 Fideos", cantidad: 2, ubicacion: "alacena", unidad: "Paquete" },
+    { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa", unidad: "Unidad" }
+];
+
+function cargarInventoryDeMemoria() {
+    const datosGuardados = storageSeguro.getItem("almacen_familiar_stock");
+    if (datosGuardados) {
+        inventario = JSON.parse(datosGuardados);
+    } else {
+        inventario = [...stockPredeterminado];
+        guardarInventarioEnMemoria();
+    }
+}
+
+function guardarInventarioEnMemoria() {
+    storageSeguro.setItem("almacen_familiar_stock", JSON.stringify(inventario));
+}
+
+async function cargarInventario() {
+    if (usuarioActual) {
+        modoNube = true;
+        const { data, error } = await supabaseClient
+            .from('alimentos')
+            .select('*')
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error('Error cargando desde la nube:', error.message);
+            inventario = [];
+        } else if (data.length === 0) {
+            await migrarLocalANube();
+            const { data: dataFinal, error: errorFinal } = await supabaseClient
+                .from('alimentos')
+                .select('*')
+                .order('created_at', { ascending: true });
+            inventario = errorFinal ? [] : dataFinal.map(mapearFilaSupabase);
+        } else {
+            inventario = data.map(mapearFilaSupabase);
+        }
+    } else {
+        modoNube = false;
+        cargarInventoryDeMemoria();
+    }
+    renderizarInventario();
+}
+
+function mapearFilaSupabase(fila) {
+    return {
+        id: fila.id,
+        nombre: fila.nombre,
+        cantidad: fila.cantidad,
+        ubicacion: fila.ubicacion,
+        unidad: fila.unidad || 'Unidad',
+        vencimiento: fila.vencimiento
+    };
+}
+
+async function migrarLocalANube() {
+    const datosGuardados = localStorage.getItem("almacen_familiar_stock");
+    if (!datosGuardados) return;
+    const itemsLocales = JSON.parse(datosGuardados);
+    if (!itemsLocales || itemsLocales.length === 0) return;
+    const filas = itemsLocales.map(item => ({
+        user_id: usuarioActual.id,
+        nombre: item.nombre,
+        cantidad: item.cantidad,
+        ubicacion: item.ubicacion,
+        unidad: item.unidad || 'Unidad',
+        vencimiento: item.vencimiento || null
+    }));
+    const { error } = await supabaseClient.from('alimentos').insert(filas);
+    if (error) console.error('Error migrando a la nube:', error.message);
+}
+
+function navegarA(pantalla) {
+    vistaActual = pantalla;
+    if (pantalla === 'inventario') {
+        document.getElementById('vista-inventario').classList.remove('hidden');
+        document.getElementById('vista-chef').classList.add('hidden');
+        document.getElementById('fab-android').classList.remove('hidden');
+        document.getElementById('nav-inventario').className = "nav-btn active";
+        document.getElementById('nav-chef').className = "nav-btn";
+        document.getElementById('subtitulo-seccion').innerText = `Stock • ${filtroActual.toUpperCase()}`;
+    } else {
+        document.getElementById('vista-inventario').classList.add('hidden');
+        document.getElementById('vista-chef').classList.remove('hidden');
+        document.getElementById('fab-android').classList.add('hidden');
+        document.getElementById('nav-inventario').className = "nav-btn";
+        document.getElementById('nav-chef').className = "nav-btn active";
+        document.getElementById('subtitulo-seccion').innerText = "Chef IA • Generador";
+    }
+}
+
+function cambiarFiltroUbicacion(ubicacion) {
+    filtroActual = ubicacion;
+    ['heladera', 'alacena', 'despensa'].forEach(u => {
+        document.getElementById(`chip-${u}`).className = u === ubicacion ? `chip active-${u}` : "chip";
+    });
+    document.getElementById('subtitulo-seccion').innerText = `Stock • ${ubicacion.toUpperCase()}`;
+    renderizarInventario();
+}
+
+function renderizarInventario() {
+    const listaUl = document.getElementById('lista-productos-movil');
+    listaUl.innerHTML = '';
+    const filtrados = inventario
+        .map((item, index) => ({ ...item, realIndex: index }))
+        .filter(item => item.ubicacion === filtroActual);
+
+    if (filtrados.length === 0) {
+        listaUl.innerHTML = `<div class="empty-state">No tienes alimentos registrados aquí.</div>`;
+        return;
+    }
+
+    filtrados.forEach((item) => {
+        const li = document.createElement('li');
+        li.className = "product-card";
+        let vencimientoHTML = '';
+        if (item.vencimiento) {
+            const estado = estadoVencimiento(item.vencimiento);
+            const etiqueta = estado === 'vencido' ? `⚠️ Venció ${formatearFecha(item.vencimiento)}` : `⏳ ${formatearFecha(item.vencimiento)}`;
+            vencimientoHTML = `<span class="venc-badge venc-${estado}">${etiqueta}</span>`;
+        }
+        li.innerHTML = `
+            <div class="product-info">
+                <span class="product-name">${item.nombre}</span>
+                <div class="product-meta">
+                    <span class="unidad-tag">${item.unidad || 'Unidad'}</span>
+                    ${vencimientoHTML}
+                </div>
+            </div>
+            <div class="controls-wrapper">
+                <button onclick="cambiarCantidad(${item.realIndex}, -1)" class="btn-counter">-</button>
+                <span id="badge-${item.realIndex}" class="count-badge count-${filtroActual}">${item.cantidad}</span>
+                <button onclick="cambiarCantidad(${item.realIndex}, 1)" class="btn-counter">+</button>
+                <button onclick="eliminarAlimentoTotal(${item.realIndex})" class="btn-delete">🗑️</button>
+            </div>
+        `;
+        listaUl.appendChild(li);
+    });
+}
+
+function formatearFecha(fechaStr) {
+    const [anio, mes, dia] = fechaStr.split('-');
+    return `${dia}/${mes}`;
+}
+
+function estadoVencimiento(fechaStr) {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fecha = new Date(fechaStr + 'T00:00:00');
+    const diffDias = Math.round((fecha - hoy) / 86400000);
+    if (diffDias < 0) return 'vencido';
+    if (diffDias <= 3) return 'proximo';
+    return 'ok';
+}
+
+async function cambiarCantidad(index, cambio) {
+    if (!inventario[index]) return;
+    let actual = parseInt(inventario[index].cantidad);
+    if (isNaN(actual)) actual = 0;
+    const nuevaCantidad = Math.max(0, actual + cambio);
+    inventario[index].cantidad = nuevaCantidad;
+    const badge = document.getElementById(`badge-${index}`);
+    if (badge) badge.textContent = nuevaCantidad;
+    else renderizarInventario();
+
+    if (modoNube) {
+        const { error } = await supabaseClient.from('alimentos').update({ cantidad: nuevaCantidad }).eq('id', inventario[index].id);
+        if (error) console.error('Error actualizando cantidad:', error.message);
+    } else {
+        guardarInventarioEnMemoria();
+    }
+}
+
+function abrirModalAgregar() {
+    document.getElementById('nuevo-nombre').value = '';
+    cantidadModalActual = 1;
+    document.getElementById('modal-cantidad-valor').value = '1';
+    document.getElementById('modal-agregar').classList.remove('hidden');
+}
+
+function cerrarModalAgregar() {
+    document.getElementById('modal-agregar').classList.add('hidden');
+}
+
+function cerrarModalPorClicAfuera(event) {
+    if (event.target.id === 'modal-agregar') cerrarModalAgregar();
+}
+
+function modificarCantidadModal(cambio) {
+    cantidadModalActual += cambio;
+    if (cantidadModalActual < 1) cantidadModalActual = 1;
+    document.getElementById('modal-cantidad-valor').value = cantidadModalActual;
+}
+
+function fijarCantidadModal(valor) {
+    let numero = parseInt(valor);
+    if (isNaN(numero) || numero < 1) numero = 1;
+    cantidadModalActual = numero;
+    document.getElementById('modal-cantidad-valor').value = cantidadModalActual;
+}
+
+async function eliminarAlimentoTotal(index) {
+    const confirmar = confirm(`¿Estás seguro de que querés quitar "${inventario[index].nombre}" del almacén?`);
+    if (!confirmar) return;
+    const item = inventario[index];
+    inventario.splice(index, 1);
+    renderizarInventario();
+    if (modoNube) {
+        const { error } = await supabaseClient.from('alimentos').delete().eq('id', item.id);
+        if (error) console.error('Error eliminando:', error.message);
+    } else {
+        guardarInventarioEnMemoria();
+    }
+}
+
+async function agregarAlimento() {
+    const btn = document.getElementById('btn-confirmar');
+    const nombreInput = document.getElementById('nuevo-nombre');
+    const ubicacionSelect = document.getElementById('nueva-ubicacion');
+    const unidadSelect = document.getElementById('nueva-unidad');
+    const vencimientoInput = document.getElementById('nuevo-vencimiento');
+
+    const nombreLimpio = nombreInput.value.trim();
+    if (!nombreLimpio) return;
+
+    btn.innerText = '✅ Guardado!';
+    btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+    btn.disabled = true;
+
+    const nombreBusqueda = nombreLimpio.toLowerCase();
+    const productoExistente = inventario.find(item =>
+        item.nombre.toLowerCase() === nombreBusqueda &&
+        item.ubicacion === ubicacionSelect.value
+    );
+
+    let cantidadFinal = cantidadModalActual;
+    let unidadFinal = unidadSelect.value;
+    if (unidadSelect.value === 'Docena') {
+        cantidadFinal = cantidadModalActual * 12;
+        unidadFinal = 'Unidad';
+    }
+    const vencimientoFinal = vencimientoInput.value || null;
+
+    if (productoExistente) {
+        const nuevaCantidad = productoExistente.cantidad + cantidadFinal;
+        productoExistente.cantidad = nuevaCantidad;
+        if (modoNube) {
+            await supabaseClient.from('alimentos').update({ cantidad: nuevaCantidad }).eq('id', productoExistente.id);
+        } else {
+            guardarInventarioEnMemoria();
+        }
+    } else {
+        if (modoNube) {
+            const { data, error } = await supabaseClient.from('alimentos').insert({
+                user_id: usuarioActual.id,
+                nombre: nombreLimpio,
+                cantidad: cantidadFinal,
+                ubicacion: ubicacionSelect.value,
+                unidad: unidadFinal,
+                vencimiento: vencimientoFinal
+            }).select().single();
+            if (!error) inventario.push(mapearFilaSupabase(data));
+        } else {
+            inventario.push({
+                nombre: nombreLimpio,
+                cantidad: cantidadFinal,
+                ubicacion: ubicacionSelect.value,
+                unidad: unidadFinal,
+                vencimiento: vencimientoFinal
+            });
+            guardarInventarioEnMemoria();
+        }
+    }
+
+    filtroActual = ubicacionSelect.value;
+    ['heladera', 'alacena', 'despensa'].forEach(u => {
+        document.getElementById(`chip-${u}`).className = u === filtroActual ? `chip active-${u}` : "chip";
+    });
+    document.getElementById('subtitulo-seccion').innerText = `Stock • ${filtroActual.toUpperCase()}`;
+    renderizarInventario();
+
+    nombreInput.value = '';
+    vencimientoInput.value = '';
+    cantidadModalActual = 1;
+    document.getElementById('modal-cantidad-valor').value = '1';
+
+    setTimeout(() => {
+        btn.innerText = 'Confirmar Guardado';
+        btn.style.background = '';
+        btn.disabled = false;
+        cerrarModalAgregar();
+    }, 700);
+}
+
+async function generarRecetasConIA(esEspecifico) {
+    const btnGeneral = document.getElementById('btn-ia');
+    const btnEspecifico = document.getElementById('btn-ia-especifico');
+    const btnActivo = esEspecifico ? btnEspecifico : btnGeneral;
+    const contenedor = document.getElementById('contenedor-recetas');
+    const resultadoTexto = document.getElementById('resultado-texto');
+    const inputPedido = document.getElementById('pedido-especifico');
+    const pedidoEspecifico = esEspecifico ? inputPedido.value.trim() : '';
+
+    if (esEspecifico && !pedidoEspecifico) {
+        resultadoTexto.innerHTML = "❌ Escribí qué querés cocinar primero.";
+        contenedor.classList.remove('hidden');
+        return;
+    }
+
+    const textoOriginalBtn = btnActivo.innerText;
+    btnActivo.innerText = "🤖 Cocinando ideas...";
+    btnActivo.disabled = true;
+    contenedor.classList.remove('hidden');
+    resultadoTexto.innerHTML = `<span class="pulse-text">Consultando con Google Gemini...</span>`;
+
+    const disponibles = inventario.filter(i => i.cantidad > 0).map(i => i.nombre);
+    if (!esEspecifico && disponibles.length === 0) {
+        resultadoTexto.innerHTML = "❌ No hay ingredientes en stock para cocinar.";
+        btnActivo.innerText = textoOriginalBtn;
+        btnActivo.disabled = false;
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/receta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ingredientes: disponibles.join(", "),
+                pedidoEspecifico: pedidoEspecifico
+            })
+        });
+        const data = await response.json();
+        if (data?.candidates?.[0]?.content?.parts?.[0]) {
+            let texto = data.candidates[0].content.parts[0].text;
+            texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            resultadoTexto.innerHTML = texto;
+        } else if (data.error) {
+            resultadoTexto.innerHTML = `❌ Error: ${data.error}`;
+        } else {
+            resultadoTexto.innerHTML = "❌ Formato incompatible recibido.";
+        }
+    } catch (error) {
+        resultadoTexto.innerHTML = "❌ Error al conectar con el servidor.";
+    } finally {
+        btnActivo.innerText = textoOriginalBtn;
+        btnActivo.disabled = false;
+    }
+}
+
+async function ingresarConGoogle() {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin }
+    });
+    if (error) console.error("Error:", error.message);
+}
+
+async function cerrarSesion() {
+    await supabaseClient.auth.signOut();
+    usuarioActual = null;
+    actualizarUISesion();
+    await cargarInventario();
+}
+
 async function verificarSesion() {
     try {
         const resultado = await Promise.race([
             supabaseClient.auth.getSession(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
         ]);
         usuarioActual = resultado?.data?.session?.user || null;
     } catch (e) {
@@ -633,6 +1254,38 @@ async function verificarSesion() {
     actualizarUISesion();
     await cargarInventario();
     cargaInicialHecha = true;
+}
+
+function actualizarUISesion() {
+    const badge = document.getElementById('badge-sesion');
+    const aviso = document.getElementById('aviso-sin-sesion'); // nuevo
+    if (usuarioActual) {
+        badge.innerHTML = `<span class="badge-dot"></span>${usuarioActual.email}`;
+        badge.onclick = cerrarSesion;
+        aviso.classList.add('hidden'); // nuevo
+    } else {
+        badge.innerHTML = `Iniciar sesión con Google`;
+        badge.onclick = ingresarConGoogle;
+        aviso.classList.remove('hidden'); // nuevo
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Adjuntar evento al botón confirmar
+    document.getElementById('btn-confirmar').addEventListener('click', agregarAlimento);
+    verificarSesion();
+});
+
+supabaseClient.auth.onAuthStateChange((_event, session) => {
+    usuarioActual = session?.user || null;
+    actualizarUISesion();
+    if (cargaInicialHecha) cargarInventario();
+});
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(e => console.error('SW error:', e));
+    });
 }
 
 function actualizarUISesion() {
