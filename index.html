@@ -174,29 +174,60 @@
 const SUPABASE_URL = "https://ienlcmxasdlhmrkrqkci.supabase.co";
 const SUPABASE_KEY = "sb_publishable_IbpLwe16Y6XA85CkPX53Cg_Re9rbRBz";
 
+function crearStorageIndexedDB() {
+    const DB_NAME = 'almacen-storage-db';
+    const STORE_NAME = 'keyval';
+
+    function abrirDB() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = () => {
+                req.result.createObjectStore(STORE_NAME);
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    return {
+        getItem: async (key) => {
+            const db = await abrirDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const req = tx.objectStore(STORE_NAME).get(key);
+                req.onsuccess = () => resolve(req.result ?? null);
+                req.onerror = () => reject(req.error);
+            });
+        },
+        setItem: async (key, value) => {
+            const db = await abrirDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                tx.objectStore(STORE_NAME).put(value, key);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        },
+        removeItem: async (key) => {
+            const db = await abrirDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                tx.objectStore(STORE_NAME).delete(key);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+    };
+}
+
 let storageSeguro;
 try {
     storageSeguro = window.localStorage;
     storageSeguro.getItem('test');
 } catch (e) {
-    console.warn('localStorage no disponible, usando memoria temporal', e);
-    const memoria = {};
-    storageSeguro = {
-        getItem: (key) => memoria[key] || null,
-        setItem: (key, value) => { memoria[key] = value; },
-        removeItem: (key) => { delete memoria[key]; }
-    };
+    console.warn('localStorage no disponible, usando IndexedDB', e);
+    storageSeguro = crearStorageIndexedDB();
 }
-document.addEventListener("DOMContentLoaded", () => {
-    const aviso = document.createElement('div');
-    aviso.style.cssText = "position:fixed;top:0;left:0;right:0;background:blue;color:white;padding:10px;z-index:9999;font-weight:bold;text-align:center;font-size:13px;";
-    if (window.indexedDB) {
-        aviso.innerText = "✅ IndexedDB EXISTE en este navegador";
-    } else {
-        aviso.innerText = "❌ IndexedDB NO EXISTE en este navegador";
-    }
-    document.body.appendChild(aviso);
-});
         
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: {
