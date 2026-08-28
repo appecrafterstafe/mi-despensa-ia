@@ -171,7 +171,15 @@ const SUPABASE_KEY = "sb_publishable_IbpLwe16Y6XA85CkPX53Cg_Re9rbRBz";
 // OJO: la librería del CDN expone su propio objeto global "supabase".
 // Por eso llamamos a nuestro cliente "supabaseClient" y no "supabase" — 
 // si usáramos el mismo nombre, se pisan entre sí y el login deja de funcionar.
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+        persistSession: true,
+        storageKey: 'almacen-auth',
+        storage: window.localStorage,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+    }
+});
 let usuarioActual = null;
 let modoNube = false; // true = guardando en Supabase, false = guardando en localStorage
 let cargaInicialHecha = false;
