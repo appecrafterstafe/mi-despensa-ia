@@ -637,22 +637,27 @@ function actualizarUISesion() {
 
 async function procesarTokenSiExiste() {
     const hash = window.location.hash;
+    alert("PASO 1 - Hash actual: " + (hash || "(vacío)"));
     if (hash.includes('access_token')) {
         const params = new URLSearchParams(hash.substring(1));
         const access_token = params.get('access_token');
         const refresh_token = params.get('refresh_token');
+        alert("PASO 2 - Tokens encontrados: access=" + (access_token ? "SI" : "NO") + " refresh=" + (refresh_token ? "SI" : "NO"));
         if (access_token && refresh_token) {
             const { data, error } = await supabaseClient.auth.setSession({
                 access_token,
                 refresh_token
             });
             if (error) {
-                console.error('Error al fijar sesión manualmente:', error.message);
+                alert("PASO 3 - ERROR al fijar sesión: " + error.message);
             } else {
+                alert("PASO 3 - Sesión fijada OK. Usuario: " + (data?.session?.user?.email || "ninguno"));
                 usuarioActual = data?.session?.user || null;
                 history.replaceState(null, '', window.location.pathname);
             }
         }
+    } else {
+        alert("PASO 2 - No hay access_token en el hash, se salta todo");
     }
 }
 
