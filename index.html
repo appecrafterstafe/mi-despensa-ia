@@ -635,18 +635,43 @@ function actualizarUISesion() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+async function procesarTokenSiExiste() {
+    const hash = window.location.hash;
+    if (hash.includes('access_token')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const access_token = params.get('access_token');
+        const refresh_token = params.get('refresh_token');
+        if (access_token && refresh_token) {
+            const { data, error } = await supabaseClient.auth.setSession({
+                access_token,
+                refresh_token
+            });
+            if (error) {
+                console.error('Error al fijar sesión manualmente:', error.message);
+            } else {
+                usuarioActual = data?.session?.user || null;
+                history.replaceState(null, '', window.location.pathname);
+            }
+        }
+    }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('btn-confirmar').addEventListener('click', agregarAlimento);
     document.getElementById('badge-sesion').onclick = ingresarConGoogle;
     cargarInventoryDeMemoria();
     renderizarInventario();
+
+    await procesarTokenSiExiste();
+    actualizarUISesion();
+    await cargarInventario();
+    cargaInicialHecha = true;
 });
 
 supabaseClient.auth.onAuthStateChange((_event, session) => {
     usuarioActual = session?.user || null;
     actualizarUISesion();
-    cargarInventario();
-    cargaInicialHecha = true;
+    if (cargaInicialHecha) cargarInventario();
 });
 
 if ('serviceWorker' in navigator) {
@@ -654,13 +679,7 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(e => console.error('SW error:', e));
     });
 }
-        window.addEventListener('load', () => {
-    if (window.location.hash.includes('access_token') || window.location.search.includes('code=')) {
-        alert("URL de retorno detectada: " + window.location.href.substring(0, 200));
-    } else {
-        alert("Sin token en la URL al cargar. URL actual: " + window.location.href.substring(0, 100));
-    }
-});
+        
     </script>
 </body>
 </html>
