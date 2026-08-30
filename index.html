@@ -673,6 +673,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     cargaInicialHecha = true;
 });
 
+window.addEventListener('hashchange', () => {
+    alert("HASHCHANGE detectado: " + window.location.hash);
+    procesarTokenSiExiste().then(() => actualizarUISesion());
+});
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        alert("VISIBILITYCHANGE - la app volvió a estar visible. Hash: " + (window.location.hash || "(vacío)"));
+    }
+});
+
 supabaseClient.auth.onAuthStateChange((_event, session) => {
     usuarioActual = session?.user || null;
     actualizarUISesion();
