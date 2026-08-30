@@ -235,7 +235,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         storageKey: 'almacen-auth',
         storage: storageSeguro,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: false
     }
 });
 
