@@ -256,18 +256,18 @@ const stockPredeterminado = [
     { nombre: "🥫 Tomate en lata", cantidad: 1, ubicacion: "despensa", unidad: "Unidad" }
 ];
 
-function cargarInventoryDeMemoria() {
-    const datosGuardados = storageSeguro.getItem("almacen_familiar_stock");
+async function cargarInventoryDeMemoria() {
+    const datosGuardados = await storageSeguro.getItem("almacen_familiar_stock");
     if (datosGuardados) {
         inventario = JSON.parse(datosGuardados);
     } else {
         inventario = [...stockPredeterminado];
-        guardarInventarioEnMemoria();
+        await guardarInventarioEnMemoria();
     }
 }
 
-function guardarInventarioEnMemoria() {
-    storageSeguro.setItem("almacen_familiar_stock", JSON.stringify(inventario));
+async function guardarInventarioEnMemoria() {
+    await storageSeguro.setItem("almacen_familiar_stock", JSON.stringify(inventario));
 }
 
 async function cargarInventario() {
@@ -296,7 +296,7 @@ async function cargarInventario() {
         }
     } else {
         modoNube = false;
-        cargarInventoryDeMemoria();
+        await cargarInventoryDeMemoria();
     }
     renderizarInventario();
 }
@@ -426,7 +426,7 @@ async function cambiarCantidad(index, cambio) {
         const { error } = await supabaseClient.from('alimentos').update({ cantidad: nuevaCantidad }).eq('id', inventario[index].id);
         if (error) console.error('Error actualizando cantidad:', error.message);
     } else {
-        guardarInventarioEnMemoria();
+        await guardarInventarioEnMemoria();
     }
 }
 
@@ -468,7 +468,7 @@ async function eliminarAlimentoTotal(index) {
         const { error } = await supabaseClient.from('alimentos').delete().eq('id', item.id);
         if (error) console.error('Error eliminando:', error.message);
     } else {
-        guardarInventarioEnMemoria();
+        await guardarInventarioEnMemoria();
     }
 }
 
@@ -506,7 +506,7 @@ async function agregarAlimento() {
         if (modoNube) {
             await supabaseClient.from('alimentos').update({ cantidad: nuevaCantidad }).eq('id', productoExistente.id);
         } else {
-            guardarInventarioEnMemoria();
+            await guardarInventarioEnMemoria();
         }
     } else {
         if (modoNube) {
@@ -527,7 +527,7 @@ async function agregarAlimento() {
                 unidad: unidadFinal,
                 vencimiento: vencimientoFinal
             });
-            guardarInventarioEnMemoria();
+            await guardarInventarioEnMemoria();
         }
     }
 
@@ -662,7 +662,7 @@ async function procesarTokenSiExiste() {
 document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('btn-confirmar').addEventListener('click', agregarAlimento);
     document.getElementById('badge-sesion').onclick = ingresarConGoogle;
-    cargarInventoryDeMemoria();
+    await cargarInventoryDeMemoria();
     renderizarInventario();
 
     await procesarTokenSiExiste();
