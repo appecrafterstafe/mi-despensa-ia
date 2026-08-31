@@ -271,6 +271,9 @@ function guardarInventarioEnMemoria() {
 }
 
 async function cargarInventario() {
+    const listaUl = document.getElementById('lista-productos-movil');
+    listaUl.innerHTML = `<div class="empty-state">Cargando stock...</div>`;
+
     if (usuarioActual) {
         modoNube = true;
         const { data, error } = await supabaseClient
