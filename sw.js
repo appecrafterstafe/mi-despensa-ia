@@ -38,7 +38,7 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: "no-store" })
       .then((respuesta) => {
         const copia = respuesta.clone();
         caches.open(CACHE_NOMBRE).then((cache) => cache.put(event.request, copia));
