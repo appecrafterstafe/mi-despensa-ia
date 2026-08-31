@@ -2,7 +2,7 @@
 // aunque no haya conexión momentánea, y para cumplir el requisito de
 // Google Play de tener funcionalidad mínima offline en apps TWA.
 
-const CACHE_NOMBRE = "almacen-familiar-v1";
+const CACHE_NOMBRE = "almacen-familiar-v2";
 const ARCHIVOS_BASE = [
   "/",
   "/index.html",
