@@ -443,6 +443,32 @@ async function cambiarCantidad(index, cambio) {
     }
 }
 
+let indexItemSeleccionado = null;
+
+function abrirModalOpciones(index) {
+    indexItemSeleccionado = index;
+    document.getElementById('opciones-item-nombre').innerText = inventario[index].nombre;
+    document.getElementById('modal-opciones-item').classList.remove('hidden');
+}
+
+function cerrarModalOpciones() {
+    document.getElementById('modal-opciones-item').classList.add('hidden');
+}
+
+function cerrarModalOpcionesPorClicAfuera(event) {
+    if (event.target.id === 'modal-opciones-item') cerrarModalOpciones();
+}
+
+function abrirModalEditar() {
+    cerrarModalOpciones();
+    alert("Editar: función pendiente de armar (próximo paso)");
+}
+
+function abrirModalMover() {
+    cerrarModalOpciones();
+    alert("Mover cantidad: función pendiente de armar (próximo paso)");
+}
+        
 function abrirModalAgregar() {
     document.getElementById('nuevo-nombre').value = '';
     cantidadModalActual = 1;
