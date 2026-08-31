@@ -25,7 +25,7 @@
         .chip.active-alacena { background-color: #d97706; color: white; border-color: #f59e0b; transform: scale(1.02); box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2); }
         .chip.active-despensa { background-color: #059669; color: white; border-color: #10b981; transform: scale(1.02); box-shadow: 0 4px 8px rgba(5, 150, 105, 0.2); }
         .items-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-        .product-card { background-color: white; padding: 16px; border-radius: 22px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); border-bottom: 3px solid #e2e8f0; }
+        .product-card { background-color: white; padding: 16px; border-radius: 22px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); border-bottom: 3px solid #e2e8f0; cursor: pointer; }
         .product-name { font-size: 15px; font-weight: 700; color: #0f172a; }
         .product-info { display: flex; flex-direction: column; gap: 5px; }
         .product-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -405,6 +405,7 @@ function renderizarInventario() {
     filtrados.forEach((item) => {
         const li = document.createElement('li');
         li.className = "product-card";
+        li.onclick = () => abrirModalOpciones(item.realIndex);
         let vencimientoHTML = '';
         if (item.vencimiento) {
             const estado = estadoVencimiento(item.vencimiento);
@@ -413,7 +414,7 @@ function renderizarInventario() {
         }
 
 li.innerHTML = `
-            <div class="product-info" onclick="abrirModalOpciones(${item.realIndex})">
+            <div class="product-info">
                 <span class="product-name">${item.nombre}</span>
                 <div class="product-meta">
                     <span class="unidad-tag">${item.unidad || 'Unidad'}</span>
