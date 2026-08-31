@@ -125,6 +125,17 @@
         <button onclick="navegarA('chef')" id="nav-chef" class="nav-btn"><span class="icon">🍳</span><span>Chef IA</span></button>
     </nav>
 
+<div id="modal-opciones-item" class="modal-overlay hidden" onclick="cerrarModalOpcionesPorClicAfuera(event)">
+    <div class="modal-sheet">
+        <div class="modal-header">
+            <h3 id="opciones-item-nombre">Producto</h3>
+            <button onclick="cerrarModalOpciones()" class="btn-close">✕</button>
+        </div>
+        <button onclick="abrirModalEditar()" class="btn-submit" style="margin-top:0;">✏️ Editar</button>
+        <button onclick="abrirModalMover()" class="btn-submit" style="background: linear-gradient(135deg, #0891b2, #06b6d4); margin-top:12px;">🔀 Mover cantidad</button>
+    </div>
+</div>
+    
     <div id="modal-agregar" class="modal-overlay hidden" onclick="cerrarModalPorClicAfuera(event)">
         <div class="modal-sheet">
             <div class="modal-header">
@@ -378,8 +389,9 @@ function renderizarInventario() {
             const etiqueta = estado === 'vencido' ? `⚠️ Venció ${formatearFecha(item.vencimiento)}` : `⏳ ${formatearFecha(item.vencimiento)}`;
             vencimientoHTML = `<span class="venc-badge venc-${estado}">${etiqueta}</span>`;
         }
-        li.innerHTML = `
-            <div class="product-info">
+
+li.innerHTML = `
+            <div class="product-info" onclick="abrirModalOpciones(${item.realIndex})">
                 <span class="product-name">${item.nombre}</span>
                 <div class="product-meta">
                     <span class="unidad-tag">${item.unidad || 'Unidad'}</span>
@@ -387,12 +399,13 @@ function renderizarInventario() {
                 </div>
             </div>
             <div class="controls-wrapper">
-                <button onclick="cambiarCantidad(${item.realIndex}, -1)" class="btn-counter">-</button>
+                <button onclick="event.stopPropagation(); cambiarCantidad(${item.realIndex}, -1)" class="btn-counter">-</button>
                 <span id="badge-${item.realIndex}" class="count-badge count-${filtroActual}">${item.cantidad}</span>
-                <button onclick="cambiarCantidad(${item.realIndex}, 1)" class="btn-counter">+</button>
-                <button onclick="eliminarAlimentoTotal(${item.realIndex})" class="btn-delete">🗑️</button>
+                <button onclick="event.stopPropagation(); cambiarCantidad(${item.realIndex}, 1)" class="btn-counter">+</button>
+                <button onclick="event.stopPropagation(); eliminarAlimentoTotal(${item.realIndex})" class="btn-delete">🗑️</button>
             </div>
         `;
+        
         listaUl.appendChild(li);
     });
 }
