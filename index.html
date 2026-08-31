@@ -135,6 +135,28 @@
         <button onclick="abrirModalMover()" class="btn-submit" style="background: linear-gradient(135deg, #0891b2, #06b6d4); margin-top:12px;">🔀 Mover cantidad</button>
     </div>
 </div>
+
+<div id="modal-mover" class="modal-overlay hidden" onclick="cerrarModalMoverPorClicAfuera(event)">
+    <div class="modal-sheet">
+        <div class="modal-header">
+            <h3>Mover Cantidad</h3>
+            <button onclick="cerrarModalMover()" class="btn-close">✕</button>
+        </div>
+        <div class="form-group">
+            <label id="mover-info-disponible">Disponibles: 0</label>
+            <div class="modal-counter-wrapper">
+                <button type="button" onclick="modificarCantidadMover(-1)" class="modal-counter-btn">-</button>
+                <input id="mover-cantidad-valor" class="modal-counter-value" type="number" min="1" value="1" inputmode="numeric" onfocus="this.select()" onchange="fijarCantidadMover(this.value)">
+                <button type="button" onclick="modificarCantidadMover(1)" class="modal-counter-btn">+</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Mover a</label>
+            <select id="mover-destino" class="form-control"></select>
+        </div>
+        <button id="btn-confirmar-mover" class="btn-submit">Confirmar Traslado</button>
+    </div>
+</div>
     
     <div id="modal-agregar" class="modal-overlay hidden" onclick="cerrarModalPorClicAfuera(event)">
         <div class="modal-sheet">
@@ -464,9 +486,115 @@ function abrirModalEditar() {
     alert("Editar: función pendiente de armar (próximo paso)");
 }
 
+let cantidadMoverActual = 1;
+
 function abrirModalMover() {
     cerrarModalOpciones();
-    alert("Mover cantidad: función pendiente de armar (próximo paso)");
+    const item = inventario[indexItemSeleccionado];
+    cantidadMoverActual = 1;
+    document.getElementById('mover-cantidad-valor').value = 1;
+    document.getElementById('mover-cantidad-valor').max = item.cantidad;
+    document.getElementById('mover-info-disponible').innerText = `Disponibles: ${item.cantidad}`;
+
+    const selectDestino = document.getElementById('mover-destino');
+    selectDestino.innerHTML = '';
+    const nombresUbicacion = { heladera: '❄️ Heladera', alacena: '🥖 Alacena', despensa: '📦 Despensa' };
+    ['heladera', 'alacena', 'despensa'].forEach(ubicacion => {
+        if (ubicacion !== item.ubicacion) {
+            const option = document.createElement('option');
+            option.value = ubicacion;
+            option.innerText = nombresUbicacion[ubicacion];
+            selectDestino.appendChild(option);
+        }
+    });
+
+    document.getElementById('modal-mover').classList.remove('hidden');
+}
+
+function cerrarModalMover() {
+    document.getElementById('modal-mover').classList.add('hidden');
+}
+
+function cerrarModalMoverPorClicAfuera(event) {
+    if (event.target.id === 'modal-mover') cerrarModalMover();
+}
+
+function modificarCantidadMover(cambio) {
+    const item = inventario[indexItemSeleccionado];
+    cantidadMoverActual += cambio;
+    if (cantidadMoverActual < 1) cantidadMoverActual = 1;
+    if (cantidadMoverActual > item.cantidad) cantidadMoverActual = item.cantidad;
+    document.getElementById('mover-cantidad-valor').value = cantidadMoverActual;
+}
+
+function fijarCantidadMover(valor) {
+    const item = inventario[indexItemSeleccionado];
+    let numero = parseInt(valor);
+    if (isNaN(numero) || numero < 1) numero = 1;
+    if (numero > item.cantidad) numero = item.cantidad;
+    cantidadMoverActual = numero;
+    document.getElementById('mover-cantidad-valor').value = cantidadMoverActual;
+}
+
+async function confirmarMover() {
+    const item = inventario[indexItemSeleccionado];
+    const destino = document.getElementById('mover-destino').value;
+    const cantidadAMover = cantidadMoverActual;
+
+    if (cantidadAMover >= item.cantidad) {
+        item.ubicacion = destino;
+        if (modoNube) {
+            await supabaseClient.from('alimentos').update({ ubicacion: destino }).eq('id', item.id);
+        } else {
+            await guardarInventarioEnMemoria();
+        }
+    } else {
+        item.cantidad -= cantidadAMover;
+        if (modoNube) {
+            await supabaseClient.from('alimentos').update({ cantidad: item.cantidad }).eq('id', item.id);
+        } else {
+            await guardarInventarioEnMemoria();
+        }
+
+        const nombreBusqueda = item.nombre.toLowerCase();
+        const productoExistenteEnDestino = inventario.find(i =>
+            i.nombre.toLowerCase() === nombreBusqueda && i.ubicacion === destino
+        );
+
+        if (productoExistenteEnDestino) {
+            const nuevaCantidad = productoExistenteEnDestino.cantidad + cantidadAMover;
+            productoExistenteEnDestino.cantidad = nuevaCantidad;
+            if (modoNube) {
+                await supabaseClient.from('alimentos').update({ cantidad: nuevaCantidad }).eq('id', productoExistenteEnDestino.id);
+            } else {
+                await guardarInventarioEnMemoria();
+            }
+        } else {
+            if (modoNube) {
+                const { data, error } = await supabaseClient.from('alimentos').insert({
+                    user_id: usuarioActual.id,
+                    nombre: item.nombre,
+                    cantidad: cantidadAMover,
+                    ubicacion: destino,
+                    unidad: item.unidad,
+                    vencimiento: item.vencimiento || null
+                }).select().single();
+                if (!error) inventario.push(mapearFilaSupabase(data));
+            } else {
+                inventario.push({
+                    nombre: item.nombre,
+                    cantidad: cantidadAMover,
+                    ubicacion: destino,
+                    unidad: item.unidad,
+                    vencimiento: item.vencimiento || null
+                });
+                await guardarInventarioEnMemoria();
+            }
+        }
+    }
+
+    cerrarModalMover();
+    renderizarInventario();
 }
         
 function abrirModalAgregar() {
@@ -700,6 +828,7 @@ async function procesarTokenSiExiste() {
 
 document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('btn-confirmar').addEventListener('click', agregarAlimento);
+    document.getElementById('btn-confirmar-mover').addEventListener('click', confirmarMover);
     document.getElementById('badge-sesion').onclick = ingresarConGoogle;
     await cargarInventoryDeMemoria();
     renderizarInventario();
