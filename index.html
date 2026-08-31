@@ -99,6 +99,18 @@
             <ul id="lista-productos-movil" class="items-list"></ul>
         </div>
 
+<div id="vista-lista" class="hidden">
+    <div class="chef-card">
+        <h2>🎙️ Lista de Compras</h2>
+        <p>Dictá los productos que necesitás comprar, separados por una pausa. Por ejemplo: "leche, huevos, pan".</p>
+        <button id="btn-dictar" onclick="iniciarDictado()" class="btn-ia" style="background: linear-gradient(90deg, #0891b2, #06b6d4);">🎙️ Tocar para Dictar</button>
+    </div>
+    <div id="resultado-dictado-box" class="output-box hidden">
+        <h3 class="output-title">📝 Texto reconocido:</h3>
+        <div id="resultado-dictado-texto" class="output-content"></div>
+    </div>
+</div>
+        
         <div id="vista-chef" class="hidden">
     <div class="chef-card">
         <h2>🤖 Chef Inteligente IA</h2>
@@ -122,7 +134,7 @@
 
     <nav>
     <button onclick="navegarA('inventario')" id="nav-inventario" class="nav-btn active"><span class="icon">📦</span><span>Mi Stock</span></button>
-    <button onclick="navegarA('lista')" id="nav-lista" class="nav-btn"><span class="icon">🎙️</span><span>Lista</span></button>
+    <button onclick="navegarA('lista de compras')" id="nav-lista" class="nav-btn"><span class="icon">🎙️</span><span>Lista</span></button>
     <button onclick="navegarA('chef')" id="nav-chef" class="nav-btn"><span class="icon">🍳</span><span>Chef IA</span></button>
 </nav>
 
@@ -365,20 +377,27 @@ async function migrarLocalANube() {
 
 function navegarA(pantalla) {
     vistaActual = pantalla;
+    document.getElementById('vista-inventario').classList.add('hidden');
+    document.getElementById('vista-chef').classList.add('hidden');
+    document.getElementById('vista-lista').classList.add('hidden');
+    document.getElementById('nav-inventario').className = "nav-btn";
+    document.getElementById('nav-chef').className = "nav-btn";
+    document.getElementById('nav-lista').className = "nav-btn";
+    document.getElementById('fab-android').classList.add('hidden');
+
     if (pantalla === 'inventario') {
         document.getElementById('vista-inventario').classList.remove('hidden');
-        document.getElementById('vista-chef').classList.add('hidden');
         document.getElementById('fab-android').classList.remove('hidden');
         document.getElementById('nav-inventario').className = "nav-btn active";
-        document.getElementById('nav-chef').className = "nav-btn";
         document.getElementById('subtitulo-seccion').innerText = `Stock • ${filtroActual.toUpperCase()}`;
-    } else {
-        document.getElementById('vista-inventario').classList.add('hidden');
+    } else if (pantalla === 'chef') {
         document.getElementById('vista-chef').classList.remove('hidden');
-        document.getElementById('fab-android').classList.add('hidden');
-        document.getElementById('nav-inventario').className = "nav-btn";
         document.getElementById('nav-chef').className = "nav-btn active";
         document.getElementById('subtitulo-seccion').innerText = "Chef IA • Generador";
+    } else if (pantalla === 'lista') {
+        document.getElementById('vista-lista').classList.remove('hidden');
+        document.getElementById('nav-lista').className = "nav-btn active";
+        document.getElementById('subtitulo-seccion').innerText = "Lista de Compras";
     }
 }
 
@@ -791,7 +810,43 @@ async function cerrarSesion() {
     await cargarInventario();
 }
 
+function iniciarDictado() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Tu navegador no soporta reconocimiento de voz.");
+        return;
+    }
 
+    const reconocimiento = new SpeechRecognition();
+    reconocimiento.lang = 'es-AR';
+    reconocimiento.continuous = false;
+    reconocimiento.interimResults = false;
+
+    const btn = document.getElementById('btn-dictar');
+    const contenedor = document.getElementById('resultado-dictado-box');
+    const resultadoTexto = document.getElementById('resultado-dictado-texto');
+
+    btn.innerText = "🔴 Escuchando...";
+    btn.disabled = true;
+
+    reconocimiento.onresult = (event) => {
+        const texto = event.results[0][0].transcript;
+        contenedor.classList.remove('hidden');
+        resultadoTexto.innerText = "Reconocido: " + texto;
+    };
+
+    reconocimiento.onerror = (event) => {
+        contenedor.classList.remove('hidden');
+        resultadoTexto.innerText = "❌ Error: " + event.error;
+    };
+
+    reconocimiento.onend = () => {
+        btn.innerText = "🎙️ Tocar para Dictar";
+        btn.disabled = false;
+    };
+
+    reconocimiento.start();
+}
 
 function actualizarUISesion() {
     const badge = document.getElementById('badge-sesion');
