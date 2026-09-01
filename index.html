@@ -111,7 +111,7 @@
         <div id="resultado-dictado-texto" class="output-content"></div>
         <div style="display:flex; gap:10px; margin-top:12px;">
             <button onclick="guardarListaActual()" class="btn-ia" style="flex:1; background: linear-gradient(90deg, #16a34a, #22c55e);">✅ Guardar Lista</button>
-            <button onclick="descartarListaActual()" class="btn-ia" style="flex:1; background: #64748b;">✖️ Descartar</button>
+            <button onclick="descartarListaActual()" class="btn-ia" style="flex:1; background: #ef4444;">✖️ Descartar</button>
         </div>
     </div>
     <div id="contenedor-listas-guardadas"></div>
@@ -140,7 +140,7 @@
 
     <nav>
     <button onclick="navegarA('inventario')" id="nav-inventario" class="nav-btn active"><span class="icon">📦</span><span>Mi Stock</span></button>
-    <button onclick="navegarA('lista de compras')" id="nav-lista" class="nav-btn"><span class="icon">🎙️</span><span>Lista</span></button>
+    <button onclick="navegarA('lista de compras')" id="nav-lista" class="nav-btn"><span class="icon">🛒</span><span>Compras</span></button>
     <button onclick="navegarA('chef')" id="nav-chef" class="nav-btn"><span class="icon">🍳</span><span>Chef IA</span></button>
 </nav>
 
@@ -381,7 +381,7 @@ async function migrarLocalANube() {
     if (error) console.error('Error migrando a la nube:', error.message);
 }
 
-function navegarA(pantalla) {
+async function navegarA(pantalla) {
     vistaActual = pantalla;
     document.getElementById('vista-inventario').classList.add('hidden');
     document.getElementById('vista-chef').classList.add('hidden');
@@ -404,7 +404,7 @@ function navegarA(pantalla) {
         document.getElementById('vista-lista').classList.remove('hidden');
         document.getElementById('nav-lista').className = "nav-btn active";
         document.getElementById('subtitulo-seccion').innerText = "Lista de Compras";
-        renderizarListasGuardadas();
+        await renderizarListasGuardadas();
     }
 }
 
@@ -817,44 +817,127 @@ async function cerrarSesion() {
     await cargarInventario();
 }
 
+let textoDictadoActual = "";
+
 function iniciarDictado() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
         alert("Tu navegador no soporta reconocimiento de voz.");
         return;
     }
-
     const reconocimiento = new SpeechRecognition();
     reconocimiento.lang = 'es-AR';
     reconocimiento.continuous = false;
     reconocimiento.interimResults = false;
-
     const btn = document.getElementById('btn-dictar');
     const contenedor = document.getElementById('resultado-dictado-box');
     const resultadoTexto = document.getElementById('resultado-dictado-texto');
-
     btn.innerText = "🔴 Escuchando...";
     btn.disabled = true;
-
     reconocimiento.onresult = (event) => {
         const texto = event.results[0][0].transcript;
+        textoDictadoActual = texto;
         contenedor.classList.remove('hidden');
-        resultadoTexto.innerText = "Reconocido: " + texto;
+        resultadoTexto.innerText = texto;
     };
-
     reconocimiento.onerror = (event) => {
         contenedor.classList.remove('hidden');
         resultadoTexto.innerText = "❌ Error: " + event.error;
+        textoDictadoActual = "";
     };
-
     reconocimiento.onend = () => {
         btn.innerText = "🎙️ Tocar para Dictar";
         btn.disabled = false;
     };
-
     reconocimiento.start();
 }
 
+async function guardarListaActual() {
+    if (!textoDictadoActual.trim()) {
+        alert("No hay texto dictado para guardar.");
+        return;
+    }
+    const items = textoDictadoActual
+        .split(',')
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
+    if (items.length === 0) {
+        alert("No se detectaron productos en el texto.");
+        return;
+    }
+    const ahora = new Date();
+    const fechaLegible = ahora.toLocaleDateString('es-AR');
+    const idUnico = ahora.getTime();
+    const nuevaLista = {
+        id: idUnico,
+        fecha: fechaLegible,
+        items: items.map(nombre => ({ nombre: nombre, comprado: false }))
+    };
+    const listas = await obtenerListasGuardadas();
+    listas.unshift(nuevaLista);
+    await storageSeguro.setItem('almacen_familiar_listas', JSON.stringify(listas));
+    descartarListaActual();
+    await renderizarListasGuardadas();
+}
+
+function descartarListaActual() {
+    textoDictadoActual = "";
+    document.getElementById('resultado-dictado-box').classList.add('hidden');
+    document.getElementById('resultado-dictado-texto').innerText = "";
+}
+
+async function obtenerListasGuardadas() {
+    try {
+        const data = await storageSeguro.getItem('almacen_familiar_listas');
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+async function toggleItemComprado(idLista, indexItem) {
+    const listas = await obtenerListasGuardadas();
+    const lista = listas.find(l => l.id === idLista);
+    if (lista) {
+        lista.items[indexItem].comprado = !lista.items[indexItem].comprado;
+        await storageSeguro.setItem('almacen_familiar_listas', JSON.stringify(listas));
+        await renderizarListasGuardadas();
+    }
+}
+
+async function eliminarLista(idLista) {
+    if (!confirm("¿Eliminar esta lista?")) return;
+    let listas = await obtenerListasGuardadas();
+    listas = listas.filter(l => l.id !== idLista);
+    await storageSeguro.setItem('almacen_familiar_listas', JSON.stringify(listas));
+    await renderizarListasGuardadas();
+}
+
+async function renderizarListasGuardadas() {
+    const contenedor = document.getElementById('contenedor-listas-guardadas');
+    const listas = await obtenerListasGuardadas();
+    if (listas.length === 0) {
+        contenedor.innerHTML = '<p style="text-align:center; color:#94a3b8; margin-top:20px;">Todavía no guardaste ninguna lista.</p>';
+        return;
+    }
+    contenedor.innerHTML = listas.map(lista => {
+        const itemsHtml = lista.items.map((item, index) => `
+            <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #e2e8f0;">
+                <input type="checkbox" ${item.comprado ? 'checked' : ''} onchange="toggleItemComprado(${lista.id}, ${index})" style="width:20px; height:20px;">
+                <span style="${item.comprado ? 'text-decoration:line-through; color:#94a3b8;' : ''}">${item.nombre}</span>
+            </div>
+        `).join('');
+        return `
+            <div class="chef-card" style="margin-top:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0;">🛒 Lista ${lista.fecha}</h3>
+                    <button onclick="eliminarLista(${lista.id})" style="background:none; border:none; color:#f87171; font-size:20px; cursor:pointer;">🗑️</button>
+                </div>
+                <div style="margin-top:10px;">${itemsHtml}</div>
+            </div>
+        `;
+    }).join('');
+}
 function actualizarUISesion() {
     const badge = document.getElementById('badge-sesion');
     const aviso = document.getElementById('aviso-sin-sesion'); // nuevo
