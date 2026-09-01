@@ -108,7 +108,7 @@
     </div>
     <div id="resultado-dictado-box" class="output-box hidden">
         <h3 class="output-title">📝 Texto reconocido:</h3>
-        <div id="resultado-dictado-texto" class="output-content"></div>
+        <textarea id="resultado-dictado-texto" class="output-content" style="width:100%; min-height:80px; border-radius:8px; padding:10px; font-size:15px; border:1px solid #cbd5e1; box-sizing:border-box;"></textarea>
         <div style="display:flex; gap:10px; margin-top:12px;">
             <button onclick="guardarListaActual()" class="btn-ia" style="flex:1; background: linear-gradient(90deg, #16a34a, #22c55e);">✅ Guardar Lista</button>
             <button onclick="descartarListaActual()" class="btn-ia" style="flex:1; background: #ef4444;">✖️ Descartar</button>
@@ -834,12 +834,13 @@ function iniciarDictado() {
     const resultadoTexto = document.getElementById('resultado-dictado-texto');
     btn.innerText = "🔴 Escuchando...";
     btn.disabled = true;
-    reconocimiento.onresult = (event) => {
-        const texto = event.results[0][0].transcript;
-        textoDictadoActual = texto;
-        contenedor.classList.remove('hidden');
-        resultadoTexto.innerText = texto;
-    };
+   reconocimiento.onresult = (event) => {
+    const texto = event.results[0][0].transcript;
+    const textoConComas = texto.trim().split(/\s+/).join(', ');
+    textoDictadoActual = textoConComas;
+    contenedor.classList.remove('hidden');
+    resultadoTexto.value = textoConComas;
+};
     reconocimiento.onerror = (event) => {
         contenedor.classList.remove('hidden');
         resultadoTexto.innerText = "❌ Error: " + event.error;
@@ -857,10 +858,10 @@ async function guardarListaActual() {
         alert("No hay texto dictado para guardar.");
         return;
     }
-    const items = textoDictadoActual
-        .split(',')
-        .map(item => item.trim())
-        .filter(item => item.length > 0);
+    const items = document.getElementById('resultado-dictado-texto').value
+    .split(',')
+    .map(item => item.trim())
+    .filter(item => item.length > 0);
     if (items.length === 0) {
         alert("No se detectaron productos en el texto.");
         return;
