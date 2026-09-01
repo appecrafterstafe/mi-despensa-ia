@@ -104,12 +104,17 @@
     <div class="chef-card">
         <h2>🛒 Lista de Compras</h2>
         <p>Dictá los productos que necesitás comprar, separados por una pausa. Por ejemplo: "leche, huevos, pan".</p>
-        <button id="btn-dictar" onclick="iniciarDictado()" class="btn-ia" style="background: linear-gradient(90deg, #0891b2, #06b6d4);">🛒 Tocar para Dictar</button>
+        <button id="btn-dictar" onclick="iniciarDictado()" class="btn-ia" style="background: linear-gradient(90deg, #0891b2, #06b6d4);">🎙️ Tocar para Dictar</button>
     </div>
     <div id="resultado-dictado-box" class="output-box hidden">
         <h3 class="output-title">📝 Texto reconocido:</h3>
         <div id="resultado-dictado-texto" class="output-content"></div>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+            <button onclick="guardarListaActual()" class="btn-ia" style="flex:1; background: linear-gradient(90deg, #16a34a, #22c55e);">✅ Guardar Lista</button>
+            <button onclick="descartarListaActual()" class="btn-ia" style="flex:1; background: #64748b;">✖️ Descartar</button>
+        </div>
     </div>
+    <div id="contenedor-listas-guardadas"></div>
 </div>
         
         <div id="vista-chef" class="hidden">
@@ -399,6 +404,7 @@ function navegarA(pantalla) {
         document.getElementById('vista-lista').classList.remove('hidden');
         document.getElementById('nav-lista').className = "nav-btn active";
         document.getElementById('subtitulo-seccion').innerText = "Lista de Compras";
+        renderizarListasGuardadas();
     }
 }
 
