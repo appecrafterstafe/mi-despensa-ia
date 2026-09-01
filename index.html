@@ -820,6 +820,7 @@ async function cerrarSesion() {
 let textoDictadoActual = "";
 
 function iniciarDictado() {
+    alert("Dictá los productos separados por una pequeña pausa (ej: leche... huevos... pan). Si dictás un producto de más de una palabra (ej: papel higiénico), será necesario borrar la coma entre las palabras.");
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
         alert("Tu navegador no soporta reconocimiento de voz.");
