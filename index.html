@@ -436,9 +436,11 @@ async function navegarA(pantalla) {
     document.getElementById('vista-inventario').classList.add('hidden');
     document.getElementById('vista-chef').classList.add('hidden');
     document.getElementById('vista-lista').classList.add('hidden');
+    document.getElementById('vista-ajustes').classList.add('hidden');
     document.getElementById('nav-inventario').className = "nav-btn";
     document.getElementById('nav-chef').className = "nav-btn";
     document.getElementById('nav-lista').className = "nav-btn";
+    document.getElementById('nav-ajustes').className = "nav-btn";
     document.getElementById('fab-android').classList.add('hidden');
 
     if (pantalla === 'inventario') {
@@ -455,7 +457,11 @@ async function navegarA(pantalla) {
         document.getElementById('nav-lista').className = "nav-btn active";
         document.getElementById('subtitulo-seccion').innerText = "Lista de Compras";
         await renderizarListasGuardadas();
-    }
+    } else if (pantalla === 'ajustes') {
+    document.getElementById('vista-ajustes').classList.remove('hidden');
+    document.getElementById('nav-ajustes').className = "nav-btn active";
+    document.getElementById('subtitulo-seccion').innerText = "Ajustes";
+}
 }
 
 function cambiarFiltroUbicacion(ubicacion) {
@@ -914,6 +920,80 @@ async function generarRecetasConIA(esEspecifico) {
     }
 }
 
+async function exportarDatos() {
+    const stock = await storageSeguro.getItem('almacen_familiar_stock');
+    const listas = await storageSeguro.getItem('almacen_familiar_listas');
+
+    const paquete = {
+        version: 1,
+        fechaExportacion: new Date().toISOString(),
+        stock: stock ? JSON.parse(stock) : [],
+        listas: listas ? JSON.parse(listas) : []
+    };
+
+    const textoJson = JSON.stringify(paquete, null, 2);
+    const blob = new Blob([textoJson], { type: 'application/json' });
+    const archivo = new File([blob], `mi-despensa-backup-${Date.now()}.json`, { type: 'application/json' });
+
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [archivo] })) {
+        try {
+            await navigator.share({
+                files: [archivo],
+                title: 'Backup Mi Despensa'
+            });
+        } catch (e) {
+            console.warn('Compartir cancelado o falló, descargando en su lugar', e);
+            descargarComoArchivo(blob, archivo.name);
+        }
+    } else {
+        descargarComoArchivo(blob, archivo.name);
+    }
+}
+
+function descargarComoArchivo(blob, nombre) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = nombre;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+async function importarDatos(event) {
+    const archivo = event.target.files[0];
+    if (!archivo) return;
+
+    const confirmar = confirm("Esto va a REEMPLAZAR tu stock y listas actuales por los del archivo. ¿Continuar?");
+    if (!confirmar) {
+        event.target.value = '';
+        return;
+    }
+
+    try {
+        const texto = await archivo.text();
+        const paquete = JSON.parse(texto);
+
+        if (!paquete.stock || !paquete.listas) {
+            alert("El archivo no tiene el formato esperado.");
+            return;
+        }
+
+        await storageSeguro.setItem('almacen_familiar_stock', JSON.stringify(paquete.stock));
+        await storageSeguro.setItem('almacen_familiar_listas', JSON.stringify(paquete.listas));
+
+        if (!modoNube) {
+            inventario = paquete.stock;
+            renderizarInventario();
+        }
+
+        alert("¡Datos importados con éxito!");
+    } catch (e) {
+        console.error(e);
+        alert("Error al leer el archivo. Asegurate de que sea un backup válido.");
+    } finally {
+        event.target.value = '';
+    }
+}        
 async function ingresarConGoogle() {
     const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
