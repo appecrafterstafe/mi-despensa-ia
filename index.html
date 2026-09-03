@@ -1003,12 +1003,14 @@ async function ingresarConGoogle() {
 }
 
 async function cerrarSesion() {
+    const confirmar = confirm("¿Estás seguro que deseas cerrar la sesión?");
+    if (!confirmar) return;
+
     await supabaseClient.auth.signOut();
     usuarioActual = null;
     actualizarUISesion();
     await cargarInventario();
 }
-
 let textoDictadoActual = "";
 
 function iniciarDictado() {
