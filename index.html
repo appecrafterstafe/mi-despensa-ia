@@ -1164,6 +1164,13 @@ async function renderizarListasGuardadas() {
         `;
     }).join('');
 }
+function toggleModoOscuro() {
+    const activo = document.body.classList.toggle('dark-mode');
+    storageSeguro.setItem('almacen_modo_oscuro', activo ? '1' : '0');
+    document.getElementById('btn-toggle-dark').innerText = activo
+        ? '☀️ Activar Modo Claro'
+        : '🌙 Activar Modo Oscuro';
+}        
 function actualizarUISesion() {
     const badge = document.getElementById('badge-sesion');
     const aviso = document.getElementById('aviso-sin-sesion'); // nuevo
@@ -1204,6 +1211,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('btn-confirmar-mover').addEventListener('click', confirmarMover);
     document.getElementById('btn-confirmar-editar').addEventListener('click', confirmarEditar);
     document.getElementById('badge-sesion').onclick = ingresarConGoogle;
+        const modoGuardado = await storageSeguro.getItem('almacen_modo_oscuro');
+    if (modoGuardado === '1') {
+        document.body.classList.add('dark-mode');
+        const btn = document.getElementById('btn-toggle-dark');
+        if (btn) btn.innerText = '☀️ Activar Modo Claro';
+    }
     await cargarInventoryDeMemoria();
     renderizarInventario();
 
