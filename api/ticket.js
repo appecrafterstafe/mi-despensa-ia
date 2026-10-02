@@ -1,25 +1,25 @@
-import { GoogleGenAI } from '@google/genai';
+const { GoogleGenAI } = require('@google/genai');
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-};
-
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
+  // Permitir solo peticiones POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido' });
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).json({ error: `Método ${req.method} no permitido` });
   }
 
   try {
-    const { image } = req.body;
-    if (!image) {
-      return res.status(400).json({ error: 'No se proporcionó ninguna imagen.' });
+    // Asegurar que req.body esté parseado si viene como string
+    let body = req.body;
+    if (typeof body === 'string') {
+      body = JSON.parse(body);
     }
 
-    // Inicializa la IA usando la variable de entorno configurada en Vercel
+    const { image } = body || {};
+    if (!image) {
+      return res.status(400).json({ error: 'No se proporcionó ninguna imagen de ticket.' });
+    }
+
+    // Inicializar la IA con la clave de entorno
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     const prompt = `Analiza este ticket de compra. Extrae todos los productos alimenticios o de despensa que encuentres. 
@@ -48,9 +48,9 @@ Devuelve estrictamente un objeto JSON válido con la siguiente estructura exacta
       ]
     });
 
-    let textoRespuesta = response.text.trim();
+    let textoRespuesta = response.text ? response.text.trim() : '';
     
-    // Limpieza por si la IA devuelve bloques de código markdown
+    // Limpieza de bloques markdown por si la IA los incluye
     if (textoRespuesta.startsWith('```json')) {
       textoRespuesta = textoRespuesta.replace(/^```json/, '').replace(/```$/, '').trim();
     } else if (textoRespuesta.startsWith('```')) {
@@ -61,7 +61,7 @@ Devuelve estrictamente un objeto JSON válido con la siguiente estructura exacta
     return res.status(200).json(resultadoJson);
 
   } catch (error) {
-    console.error("Error al procesar ticket en el backend:", error);
-    return res.status(500).json({ error: 'Error interno al procesar el ticket con la IA.' });
+    console.error("Error detallado en ticket.js:", error);
+    return res.status(500).json({ error: error.message || 'Error interno al procesar el ticket con la IA.' });
   }
-}
+};
