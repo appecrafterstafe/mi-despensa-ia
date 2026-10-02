@@ -300,6 +300,17 @@ body.dark-mode #resultado-dictado-texto { background-color: #0f172a; border-colo
             </div>
             <button id="btn-confirmar" class="btn-submit">Confirmar Guardado</button>
         </div>
+
+<!-- Tarjeta para escanear tickets con IA -->
+<div class="chef-card" style="margin-bottom: 16px; background: linear-gradient(135deg, #0284c7, #0369a1);">
+    <h2>🧾 Escanear Ticket con IA</h2>
+    <p style="color: #e0f2fe;">Sacá una foto a tu ticket de compra y la IA agregará automáticamente los productos a tu despensa.</p>
+    <input type="file" id="ticketInput" accept="image/*" capture="environment" class="hidden" onchange="procesarTicketConIA(event)">
+    <button onclick="document.getElementById('ticketInput').click()" class="btn-ia" style="background: linear-gradient(90deg, #f97316, #ea580c);">
+        📸 Subir o Fotografiar Ticket
+    </button>
+</div>
+        
     </div>
 
     <script>
@@ -1237,6 +1248,67 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(e => console.error('SW error:', e));
     });
 }
+
+// --- FUNCIONES DE ESCANEO DE TICKETS CON IA ---
+async function procesarTicketConIA(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    alert("Analizando ticket con IA, por favor aguarda unos segundos...");
+
+    try {
+        const base64Image = await convertirArchivoABase64(file);
+
+        const response = await fetch('/api/ticket', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64Image })
+        });
+
+        const data = await response.json();
+
+        if (data.productos && data.productos.length > 0) {
+            let agregados = 0;
+            for (const prod of data.productos) {
+                // Utiliza tu estructura actual para insertar en tu array o base de datos
+                if (typeof inventario !== 'undefined') {
+                    inventario.push({
+                        nombre: prod.nombre,
+                        cantidad: prod.cantidad || 1,
+                        ubicacion: prod.ubicacion || 'despensa',
+                        unidad: prod.unidad || 'Unidad'
+                    });
+                }
+                agregados++;
+            }
+
+            if (typeof renderizarInventario === 'function') {
+                renderizarInventario();
+            }
+            alert(`¡Se detectaron y agregaron ${agregados} productos con éxito!`);
+        } else if (data.error) {
+            alert(`❌ Error de IA: ${data.error}`);
+        } else {
+            alert("No se pudieron reconocer productos en el ticket. Intenta con una foto más clara.");
+        }
+
+    } catch (error) {
+        console.error("Error al procesar ticket:", error);
+        alert("Hubo un error de conexión al procesar el ticket.");
+    } finally {
+        event.target.value = ''; 
+    }
+}
+
+function convertirArchivoABase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+    });
+}
+
         
     </script>
 </body>
