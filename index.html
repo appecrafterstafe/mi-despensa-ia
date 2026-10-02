@@ -117,15 +117,15 @@ body.dark-mode #resultado-dictado-texto { background-color: #0f172a; border-colo
 
     <main>
 
-<!-- Tarjeta para escanear tickets con IA -->
-<div class="chef-card" style="margin-bottom: 16px; background: linear-gradient(135deg, #0284c7, #0369a1);">
-    <h2>🧾 Escanear Ticket con IA</h2>
-    <p style="color: #e0f2fe;">Sacá una foto a tu ticket de compra y la IA agregará automáticamente los productos a tu despensa.</p>
-    <input type="file" id="ticketInput" accept="image/*" capture="environment" class="hidden" onchange="procesarTicketConIA(event)">
-    <button onclick="document.getElementById('ticketInput').click()" class="btn-ia" style="background: linear-gradient(90deg, #f97316, #ea580c);">
-        📸 Subir o Fotografiar Ticket
-    </button>
-</div>
+        <!-- Tarjeta para escanear tickets con IA -->
+        <div class="chef-card" style="margin-bottom: 16px; background: linear-gradient(135deg, #0284c7, #0369a1);">
+            <h2>🧾 Escanear Ticket con IA</h2>
+            <p style="color: #e0f2fe;">Sacá una foto a tu ticket de compra y la IA agregará automáticamente los productos a tu despensa.</p>
+            <input type="file" id="ticketInput" accept="image/*" capture="environment" class="hidden" onchange="procesarTicketConIA(event)">
+            <button onclick="document.getElementById('ticketInput').click()" class="btn-ia" style="background: linear-gradient(90deg, #f97316, #ea580c);">
+                📸 Subir o Fotografiar Ticket
+            </button>
+        </div>
         
         <div id="vista-inventario">
             <div class="chips-container">
