@@ -1,14 +1,10 @@
-const { GoogleGenAI } = require('@google/genai');
-
 module.exports = async (req, res) => {
-  // Permitir solo peticiones POST
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: `Método ${req.method} no permitido` });
   }
 
   try {
-    // Asegurar que req.body esté parseado si viene como string
     let body = req.body;
     if (typeof body === 'string') {
       body = JSON.parse(body);
@@ -19,10 +15,12 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'No se proporcionó ninguna imagen de ticket.' });
     }
 
-    // Inicializar la IA con la clave de entorno
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'Falta configurar GEMINI_API_KEY en las variables de entorno de Vercel.' });
+    }
 
-    const prompt = `Analiza este ticket de compra. Extrae todos los productos alimenticios o de despensa que encuentres. 
+    const promptText = `Analiza este ticket de compra. Extrae todos los productos alimenticios o de despensa que encuentres. 
 Devuelve estrictamente un objeto JSON válido con la siguiente estructura exacta (sin texto adicional, sin bloques de código markdown como \`\`\`json):
 {
   "productos": [
@@ -35,20 +33,35 @@ Devuelve estrictamente un objeto JSON válido con la siguiente estructura exacta
   ]
 }`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [
-        {
-          inlineData: {
-            mimeType: 'image/jpeg',
-            data: image
+    // Usamos fetch directamente contra la API REST oficial de Gemini para evitar conflictos en serverless
+    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                inlineData: {
+                  mimeType: 'image/jpeg',
+                  data: image
+                }
+              },
+              { text: promptText }
+            ]
           }
-        },
-        prompt
-      ]
+        ]
+      })
     });
 
-    let textoRespuesta = response.text ? response.text.trim() : '';
+    const data = await aiResponse.json();
+
+    if (!aiResponse.ok) {
+      throw new Error(data.error?.message || 'Error al comunicarse con la API de Gemini');
+    }
+
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    let textoRespuesta = rawText.trim();
     
     // Limpieza de bloques markdown por si la IA los incluye
     if (textoRespuesta.startsWith('```json')) {
